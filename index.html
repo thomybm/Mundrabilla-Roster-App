@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mundrabilla Roadhouse Roster Optimizer</title>
+<meta name="theme-color" content="#f8fafc">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-icon">🛣️</span>
+      <div>
+        <h1>Mundrabilla Roadhouse</h1>
+        <p class="subtitle">Roster Optimizer</p>
+      </div>
+    </div>
+    <nav class="tabs" id="mainTabs">
+      <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+      <button class="tab-btn" data-tab="roster">Roster</button>
+      <button class="tab-btn" data-tab="employees">Employees</button>
+      <button class="tab-btn" data-tab="settings">Settings</button>
+      <button class="tab-btn" data-tab="history">History</button>
+    </nav>
+    <div class="offline-badge" id="offlineBadge">● Offline Ready</div>
+  </header>
+
+  <main>
+
+    <!-- DASHBOARD -->
+    <section id="tab-dashboard" class="tab-panel active">
+      <div class="panel-header">
+        <h2>Fairness Dashboard</h2>
+        <p class="muted">Quality metrics for the currently loaded roster.</p>
+      </div>
+      <div id="dashboardContent" class="dashboard-grid">
+        <div class="empty-state">No roster generated yet. Go to the <strong>Roster</strong> tab to create one.</div>
+      </div>
+    </section>
+
+    <!-- ROSTER -->
+    <section id="tab-roster" class="tab-panel">
+      <div class="panel-header">
+        <h2>Weekly Roster <span id="weekLabel" class="muted"></span></h2>
+        <div class="actions">
+          <button id="btnPrevWeek" class="btn-secondary">◀ Prev Week</button>
+          <input type="date" id="weekStartPicker" />
+          <button id="btnNextWeek" class="btn-secondary">Next Week ▶</button>
+          <button id="btnGenerate" class="btn-primary">⚙ Generate Roster</button>
+          <button id="btnExport" class="btn-secondary">⬇ Export to Excel</button>
+        </div>
+      </div>
+      <div id="rosterWarnings" class="warnings-box" style="display:none;"></div>
+      <div class="table-wrap">
+        <table id="rosterTable" class="roster-table">
+          <thead><tr id="rosterHeadRow"></tr></thead>
+          <tbody id="rosterBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- EMPLOYEES -->
+    <section id="tab-employees" class="tab-panel">
+      <div class="panel-header">
+        <h2>Employees</h2>
+        <div class="actions">
+          <button id="btnAddEmployee" class="btn-primary">＋ Add Employee</button>
+        </div>
+      </div>
+      <div id="employeeList" class="employee-list"></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="tab-settings" class="tab-panel">
+      <div class="panel-header"><h2>Settings</h2></div>
+      <div class="settings-grid">
+        <div class="card">
+          <h3>Hourly Pay Rates</h3>
+          <div id="ratesForm" class="rates-form"></div>
+        </div>
+        <div class="card">
+          <h3>Float Shifts Required Per Day</h3>
+          <p class="muted">Float supports Kitchen or Housekeeping. Set how many Float positions are needed each day before generating a roster.</p>
+          <div id="floatForm" class="float-form"></div>
+        </div>
+        <div class="card">
+          <h3>Transferir Datos Entre Dispositivos</h3>
+          <p class="muted">Esta app guarda todo localmente en cada dispositivo. Usa estos botones para mover empleados, historial de rosters y configuración a otro dispositivo o navegador.</p>
+          <div class="actions" style="margin-top:10px;">
+            <button id="btnExportData" class="btn-secondary">⬇ Exportar todos los datos</button>
+            <label class="btn-primary" style="cursor:pointer; display:inline-block;">
+              ⬆ Importar datos
+              <input type="file" id="importDataInput" accept="application/json" style="display:none;">
+            </label>
+          </div>
+          <p class="muted" id="importWarningText" style="margin-top:8px;">⚠ Importar reemplaza todos los datos actuales de este dispositivo por los del archivo.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section id="tab-history" class="tab-panel">
+      <div class="panel-header">
+        <h2>Roster History</h2>
+        <p class="muted">Last 5 generated rosters are stored and used to improve long-term fairness.</p>
+      </div>
+      <div id="historyList" class="history-list"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Employee edit modal -->
+<div id="employeeModal" class="modal-overlay" style="display:none;">
+  <div class="modal">
+    <h3 id="employeeModalTitle">Employee</h3>
+    <div class="modal-body" id="employeeModalBody"></div>
+    <div class="modal-actions">
+      <button id="btnDeleteEmployee" class="btn-danger">Delete</button>
+      <div style="flex:1"></div>
+      <button id="btnCancelEmployee" class="btn-secondary">Cancel</button>
+      <button id="btnSaveEmployee" class="btn-primary">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Float count prompt modal -->
+<div id="floatPromptModal" class="modal-overlay" style="display:none;">
+  <div class="modal">
+    <h3>Float Shifts Required</h3>
+    <p class="muted">Set the number of Float shifts required for each day of this roster week before generating.</p>
+    <div class="modal-body" id="floatPromptBody"></div>
+    <div class="modal-actions">
+      <div style="flex:1"></div>
+      <button id="btnCancelFloatPrompt" class="btn-secondary">Cancel</button>
+      <button id="btnConfirmFloatPrompt" class="btn-primary">Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- assignment picker modal (for manual edits) -->
+<div id="assignModal" class="modal-overlay" style="display:none;">
+  <div class="modal modal-narrow">
+    <h3 id="assignModalTitle">Assign Employee</h3>
+    <div class="modal-body" id="assignModalBody"></div>
+    <div class="modal-actions">
+      <div style="flex:1"></div>
+      <button id="btnCancelAssign" class="btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" style="display:none;"></div>
+
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="js/models.js"></script>
+<script src="js/db.js"></script>
+<script src="js/scheduler.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/export.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

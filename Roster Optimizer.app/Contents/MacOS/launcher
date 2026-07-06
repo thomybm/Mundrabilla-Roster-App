@@ -1,0 +1,21 @@
+#!/bin/bash
+# Se ubica en la carpeta del proyecto (dos niveles arriba de Contents/MacOS)
+DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
+cd "$DIR"
+
+PORT=8000
+
+# Si el puerto ya está en uso, asumimos que el servidor ya corre: solo abrimos el navegador
+if ! lsof -i :$PORT >/dev/null 2>&1; then
+    if command -v python3 >/dev/null 2>&1; then
+        nohup python3 -m http.server $PORT > /tmp/roster_optimizer_server.log 2>&1 &
+    elif command -v python >/dev/null 2>&1; then
+        nohup python -m http.server $PORT > /tmp/roster_optimizer_server.log 2>&1 &
+    else
+        osascript -e 'display alert "Falta Python" message "Instala Python desde python.org e inténtalo de nuevo."'
+        exit 1
+    fi
+    sleep 1.2
+fi
+
+open "http://localhost:$PORT"
