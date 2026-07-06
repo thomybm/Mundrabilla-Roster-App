@@ -31,9 +31,23 @@ const App = (() => {
     date.setDate(date.getDate() - diff);
     return toDateStr(date);
   }
-  function toDateStr(d) { return d.toISOString().slice(0, 10); }
+  // Formats a Date object as 'YYYY-MM-DD' using its LOCAL calendar date,
+  // never UTC — toISOString() would shift the date back a day for anyone
+  // in a timezone behind UTC (e.g. the Americas).
+  function toDateStr(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+  // Parses a 'YYYY-MM-DD' string as local midnight, never UTC midnight —
+  // `new Date('2026-07-08')` alone is parsed as UTC and can render as the
+  // previous day in negative-UTC-offset timezones.
+  function parseLocalDate(dateStr) {
+    return new Date(dateStr + 'T00:00:00');
+  }
   function addDays(dateStr, n) {
-    const d = new Date(dateStr);
+    const d = parseLocalDate(dateStr);
     d.setDate(d.getDate() + n);
     return toDateStr(d);
   }
@@ -103,7 +117,7 @@ const App = (() => {
   }
   async function onWeekPicked(dateStr) {
     // snap to Wednesday of that week
-    state.weekStartDate = mostRecentWednesday(new Date(dateStr));
+    state.weekStartDate = mostRecentWednesday(parseLocalDate(dateStr));
     await DB.putSetting('currentWeekStart', state.weekStartDate);
     const existing = state.historyRosters.find(r => r.weekStartDate === state.weekStartDate);
     state.currentRoster = existing || null;
@@ -349,25 +363,25 @@ const App = (() => {
       const blob = new Blob([json], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      const dateStr = new Date().toISOString().slice(0, 10);
+      const dateStr = toDateStr(new Date());
       a.href = url;
       a.download = `mundrabilla-roster-backup-${dateStr}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast('Datos exportados correctamente.');
+      toast('Data exported successfully.');
     } catch (err) {
       console.error(err);
-      toast('Error al exportar: ' + err.message);
+      toast('Export error: ' + err.message);
     }
   }
 
   async function importAllData(file) {
     if (!file) return;
     const confirmed = confirm(
-      'Importar reemplazará TODOS los datos actuales de este dispositivo ' +
-      '(empleados, historial de rosters y configuración) por los del archivo. ¿Continuar?'
+      'Importing will replace ALL current data on this device ' +
+      '(employees, roster history, and settings) with the data from the file. Continue?'
     );
     if (!confirmed) return;
     try {
@@ -387,10 +401,10 @@ const App = (() => {
       if (state.currentRoster) state.weekStartDate = state.currentRoster.weekStartDate;
 
       renderAll();
-      toast('Datos importados correctamente.');
+      toast('Data imported successfully.');
     } catch (err) {
       console.error(err);
-      toast('Error al importar: archivo inválido o dañado.');
+      toast('Import error: invalid or corrupted file.');
     }
   }
 

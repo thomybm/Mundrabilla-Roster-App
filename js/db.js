@@ -114,7 +114,7 @@ const DB = (() => {
 
   async function importAllData(data, mode = 'replace') {
     if (!data || !Array.isArray(data.employees) || !Array.isArray(data.rosters)) {
-      throw new Error('Archivo de datos inválido o dañado.');
+      throw new Error('Invalid or corrupted data file.');
     }
     if (mode === 'replace') {
       const empStore = await tx('employees', 'readwrite');

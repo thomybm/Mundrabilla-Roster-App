@@ -62,10 +62,20 @@ const UI = (() => {
     return d.innerHTML;
   }
 
+  // Formats a Date object as 'YYYY-MM-DD' using its LOCAL calendar date,
+  // never UTC — toISOString() shifts the date back a day for anyone in a
+  // timezone behind UTC (e.g. the Americas).
+  function toLocalDateStr(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
   // ---------------- Week label ----------------
   function renderWeekLabel(weekStartDate) {
-    const start = new Date(weekStartDate);
-    const end = new Date(weekStartDate);
+    const start = new Date(weekStartDate + 'T00:00:00');
+    const end = new Date(weekStartDate + 'T00:00:00');
     end.setDate(end.getDate() + 6);
     const fmt = (d) => d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
     document.getElementById('weekLabel').textContent = `(${fmt(start)} — ${fmt(end)})`;
@@ -301,7 +311,7 @@ const UI = (() => {
     if (!fromVal) return;
 
     if (toVal < fromVal) {
-      alert('La fecha "To" no puede ser anterior a la fecha "From".');
+      alert('The "To" date cannot be earlier than the "From" date.');
       return;
     }
 
@@ -311,14 +321,14 @@ const UI = (() => {
     const end = new Date(toVal + 'T00:00:00');
     const dayCount = Math.round((end - start) / 86400000) + 1;
     if (dayCount > MAX_RANGE_DAYS) {
-      alert(`El período es demasiado largo (${dayCount} días). Elige un rango de hasta ${MAX_RANGE_DAYS} días.`);
+      alert(`This range is too long (${dayCount} days). Please choose a range of up to ${MAX_RANGE_DAYS} days.`);
       return;
     }
 
     for (let i = 0; i < dayCount; i++) {
       const d = new Date(start);
       d.setDate(d.getDate() + i);
-      const dateStr = d.toISOString().slice(0, 10);
+      const dateStr = toLocalDateStr(d);
       if (!workingDates[field].includes(dateStr)) workingDates[field].push(dateStr);
     }
 
@@ -346,7 +356,7 @@ const UI = (() => {
   function isNextDay(dateStr, candidateStr) {
     const d = new Date(dateStr + 'T00:00:00');
     d.setDate(d.getDate() + 1);
-    return d.toISOString().slice(0, 10) === candidateStr;
+    return toLocalDateStr(d) === candidateStr;
   }
 
   function renderDateChips(field, containerId) {
