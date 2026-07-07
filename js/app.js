@@ -64,9 +64,24 @@ const App = (() => {
     const storedFloat = await DB.getSetting('defaultFloatCounts');
     if (storedFloat) state.defaultFloatCounts = storedFloat;
     const storedWeek = await DB.getSetting('currentWeekStart');
-    if (storedWeek) state.weekStartDate = storedWeek;
+    if (storedWeek) {
+      // Re-snap to Wednesday in case this value was saved by an older version
+      // of the app affected by the UTC/local timezone bug (fixes itself here
+      // rather than requiring the user to manually clear stored data).
+      state.weekStartDate = mostRecentWednesday(parseLocalDate(storedWeek));
+      if (state.weekStartDate !== storedWeek) {
+        await DB.putSetting('currentWeekStart', state.weekStartDate);
+      }
+    }
 
     state.historyRosters = await DB.getAllRosters();
+    for (const roster of state.historyRosters) {
+      const corrected = mostRecentWednesday(parseLocalDate(roster.weekStartDate));
+      if (corrected !== roster.weekStartDate) {
+        roster.weekStartDate = corrected;
+        await DB.putRoster(roster);
+      }
+    }
     if (state.historyRosters.length > 0) {
       const forThisWeek = state.historyRosters.find(r => r.weekStartDate === state.weekStartDate);
       if (forThisWeek) state.currentRoster = forThisWeek;
@@ -103,7 +118,7 @@ const App = (() => {
     UI.renderEmployeeList(state.employees);
     UI.renderRatesForm(state.rates);
     UI.renderFloatForm(state.defaultFloatCounts);
-    UI.renderDashboard(state.currentRoster);
+    UI.renderDashboard(state.currentRoster, state.historyRosters);
     UI.renderHistory(state.historyRosters);
   }
 
@@ -183,7 +198,8 @@ const App = (() => {
     // week, and vice versa — compensating week-to-week rather than resetting to zero.
     // Other factors (earnings, weekend shifts, role mix, preferences) carry a lighter
     // weight so this week's own internal balance still dominates day-to-day fairness.
-    const agg = Stats.aggregateHistory(state.historyRosters);
+    const priorWeeksOnly = state.historyRosters.filter(r => r.weekStartDate !== state.weekStartDate);
+    const agg = Stats.aggregateHistory(priorWeeksOnly);
     const seed = {};
     Object.keys(agg).forEach(id => {
       const a = agg[id];
@@ -218,8 +234,12 @@ const App = (() => {
       const perEmployee = Stats.computeFromEmployeeDay(state.employees.filter(e => e.active), result.employeeDay, state.rates);
       const quality = Stats.qualityScore(perEmployee, result.warnings);
 
+      // Regenerating an already-generated week replaces that week's single
+      // history entry instead of adding a new one (see db.js putRoster).
+      const existingForWeek = state.historyRosters.find(r => r.weekStartDate === state.weekStartDate);
+
       const roster = {
-        id: Models.newId(),
+        id: existingForWeek ? existingForWeek.id : Models.newId(),
         createdAt: Date.now(),
         weekStartDate: state.weekStartDate,
         schedule: result.schedule,

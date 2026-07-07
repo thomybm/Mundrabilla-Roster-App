@@ -1,5 +1,5 @@
 /* sw.js - App shell caching for full offline operation */
-const CACHE_NAME = 'mundrabilla-roster-v8';
+const CACHE_NAME = 'mundrabilla-roster-v9';
 const ASSETS = [
   './',
   './index.html',

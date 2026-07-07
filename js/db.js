@@ -75,22 +75,38 @@ const DB = (() => {
   }
 
   // ---- Rosters (history) ----
+  // One roster per calendar week is kept: regenerating the same week replaces
+  // its existing entry instead of adding a new one, so re-running the
+  // generator several times in one week doesn't crowd out older weeks or
+  // over-weight that week in the fairness history.
   async function getAllRosters() {
     const store = await tx('rosters', 'readonly');
     const all = await reqToPromise(store.getAll());
-    return all.sort((a, b) => b.createdAt - a.createdAt);
+    return all.sort((a, b) => (b.weekStartDate > a.weekStartDate ? 1 : b.weekStartDate < a.weekStartDate ? -1 : b.createdAt - a.createdAt));
   }
   async function putRoster(roster) {
     const store = await tx('rosters', 'readwrite');
+    // Remove any other entry for the same calendar week before saving
+    // (covers the case where a fresh id was generated for a week that
+    // already had a roster stored).
+    const all = await reqToPromise(store.getAll());
+    const duplicates = all.filter(r => r.weekStartDate === roster.weekStartDate && r.id !== roster.id);
+    for (const dup of duplicates) store.delete(dup.id);
     await reqToPromise(store.put(roster));
-    // trim history beyond MAX_ROSTER_HISTORY
-    const all = await getAllRosters();
-    if (all.length > MAX_ROSTER_HISTORY) {
-      const toRemove = all.slice(MAX_ROSTER_HISTORY);
+
+    // trim history beyond MAX_ROSTER_HISTORY distinct calendar weeks
+    const updated = await getAllRosters();
+    if (updated.length > MAX_ROSTER_HISTORY) {
+      const toRemove = updated.slice(MAX_ROSTER_HISTORY);
       const delStore = await tx('rosters', 'readwrite');
       for (const r of toRemove) delStore.delete(r.id);
     }
     return true;
+  }
+  async function getRosterByWeek(weekStartDate) {
+    const store = await tx('rosters', 'readonly');
+    const all = await reqToPromise(store.getAll());
+    return all.find(r => r.weekStartDate === weekStartDate) || null;
   }
   async function getRoster(id) {
     const store = await tx('rosters', 'readonly');
@@ -136,7 +152,7 @@ const DB = (() => {
   return {
     getAllEmployees, putEmployee, deleteEmployee,
     getSetting, putSetting,
-    getAllRosters, putRoster, getRoster,
+    getAllRosters, putRoster, getRoster, getRosterByWeek,
     exportAllData, importAllData,
     MAX_ROSTER_HISTORY
   };

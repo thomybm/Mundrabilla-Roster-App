@@ -462,7 +462,7 @@ const UI = (() => {
   }
 
   // ---------------- Dashboard ----------------
-  function renderDashboard(roster) {
+  function renderDashboard(roster, historyRosters) {
     const container = document.getElementById('dashboardContent');
     if (!roster) {
       container.innerHTML = `<div class="empty-state">No roster generated yet. Go to the <strong>Roster</strong> tab to create one.</div>`;
@@ -491,7 +491,7 @@ const UI = (() => {
       </div>
 
       <div class="stat-card">
-        <h4>Horas Trabajadas Esta Semana</h4>
+        <h4>Hours Worked This Week</h4>
         ${ids.map((id, i) => barRow(names[i], hours[i], maxHours, hours[i] + 'h')).join('')}
       </div>
 
@@ -523,6 +523,71 @@ const UI = (() => {
           const pct = total > 0 ? Math.round((st.prefHits / total) * 100) : 100;
           return barRow(st.name, pct, 100, pct + '%');
         }).join('')}
+      </div>
+
+      ${renderHistoricalOverview(historyRosters)}
+    `;
+  }
+
+  function renderHistoricalOverview(historyRosters) {
+    if (!historyRosters || historyRosters.length === 0) return '';
+
+    const weekCount = historyRosters.length;
+    const agg = Stats.aggregateHistory(historyRosters);
+    const ids = Object.keys(agg);
+    if (ids.length === 0) return '';
+
+    const names = ids.map(id => agg[id].name);
+    const hours = ids.map(id => agg[id].hoursWorked || 0);
+    const sat = ids.map(id => agg[id].satShifts);
+    const sun = ids.map(id => agg[id].sunShifts);
+    const earnings = ids.map(id => agg[id].earnings);
+    const weekendOff = ids.map(id => agg[id].weekendOff);
+    const weekdayOff = ids.map(id => agg[id].weekdayOff);
+
+    const maxHours = Math.max(1, ...hours);
+    const maxSat = Math.max(1, ...sat);
+    const maxSun = Math.max(1, ...sun);
+    const maxEarn = Math.max(1, ...earnings);
+    const maxWeekendOff = Math.max(1, ...weekendOff);
+    const maxWeekdayOff = Math.max(1, ...weekdayOff);
+
+    const weekLabel = weekCount === 1 ? '1 week stored' : `last ${weekCount} weeks stored`;
+
+    return `
+      <div class="stat-card" style="grid-column: 1 / -1; margin-top:8px;">
+        <h4 style="text-transform:none; font-size:15px; color:var(--text); margin-bottom:2px;">📊 Historical Overview <span class="muted" style="font-weight:400;">(${weekLabel}, up to ${DB.MAX_ROSTER_HISTORY} kept)</span></h4>
+        <p class="muted" style="margin-top:0;">Cumulative totals across the stored weeks — use this to spot anyone who has been consistently over- or under-worked over time, not just in the current week.</p>
+      </div>
+
+      <div class="stat-card">
+        <h4>Total Hours Worked (all stored weeks)</h4>
+        ${ids.map((id, i) => barRow(names[i], hours[i], maxHours, hours[i] + 'h')).join('')}
+      </div>
+
+      <div class="stat-card">
+        <h4>Total Earnings (all stored weeks)</h4>
+        ${ids.map((id, i) => barRow(names[i], earnings[i], maxEarn, '$' + earnings[i].toFixed(2))).join('')}
+      </div>
+
+      <div class="stat-card">
+        <h4>Total Saturday Shifts (all stored weeks)</h4>
+        ${ids.map((id, i) => barRow(names[i], sat[i], maxSat, sat[i])).join('')}
+      </div>
+
+      <div class="stat-card">
+        <h4>Total Sunday Shifts (all stored weeks)</h4>
+        ${ids.map((id, i) => barRow(names[i], sun[i], maxSun, sun[i])).join('')}
+      </div>
+
+      <div class="stat-card">
+        <h4>Total Weekend Days Off (all stored weeks)</h4>
+        ${ids.map((id, i) => barRow(names[i], weekendOff[i], maxWeekendOff, weekendOff[i])).join('')}
+      </div>
+
+      <div class="stat-card">
+        <h4>Total Weekday Days Off (all stored weeks)</h4>
+        ${ids.map((id, i) => barRow(names[i], weekdayOff[i], maxWeekdayOff, weekdayOff[i])).join('')}
       </div>
     `;
   }
