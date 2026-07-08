@@ -238,6 +238,26 @@ const Scheduler = (() => {
       }
     });
 
+    // Rest-maximizing bonus: for every day off, working a Morning shift the day
+    // before (finishes early) and a Night shift the day after (starts late)
+    // stretches the unbroken rest window around that day off. Only checked
+    // within this week's 7 days (no visibility into the adjoining weeks).
+    let restBonus = 0;
+    ids.forEach(id => {
+      Models.WEEK_DAYS.forEach((day, idx) => {
+        const rolesToday = candidate.employeeDay[id][day] || ['Day Off'];
+        if (!rolesToday.includes('Day Off')) return;
+        if (idx > 0) {
+          const prevRoles = candidate.employeeDay[id][Models.WEEK_DAYS[idx - 1]] || ['Day Off'];
+          if (prevRoles.some(r => Models.isMorningRole(r))) restBonus += 1;
+        }
+        if (idx < Models.WEEK_DAYS.length - 1) {
+          const nextRoles = candidate.employeeDay[id][Models.WEEK_DAYS[idx + 1]] || ['Day Off'];
+          if (nextRoles.some(r => Models.isNightRole(r))) restBonus += 1;
+        }
+      });
+    });
+
     // Weighted cost: lower is better. Tiers separated by orders of magnitude.
     // "hoursCV * BALANCE_WEIGHT" and "weekendCV * BALANCE_WEIGHT" share the exact
     // same weight on purpose: hours-worked-per-week and weekend (Sat+Sun) shift
@@ -257,14 +277,15 @@ const Scheduler = (() => {
       roleVarSum * 50 -
       prefHits * 40 +
       prefMisses * 60 -
-      consecutiveBonus * 25;
+      consecutiveBonus * 25 -
+      restBonus * 15;
 
     return {
       cost,
       breakdown: {
         unfilled, doubleShifts, earningsVar, hoursVar, hoursCV,
         satVar, sunVar, weekendVar, weekendCV, offVar,
-        roleVarSum, prefHits, prefMisses, consecutiveBonus
+        roleVarSum, prefHits, prefMisses, consecutiveBonus, restBonus
       }
     };
   }
@@ -304,6 +325,10 @@ const Scheduler = (() => {
     // Local search: attempt swaps between two employees on the same day to reduce cost
     best = localSearchImprove(best, activeEmployees, floatCounts, rates, history, weekStartDate, 40);
 
+    // Targeted pass: for each day-off, try to swap in a Morning shift the day
+    // before and a Night shift the day after (maximizes unbroken rest time).
+    best = restOptimizationPass(best, activeEmployees, rates, weekStartDate);
+
     return {
       schedule: best.candidate.schedule,
       employeeDay: best.candidate.employeeDay,
@@ -312,6 +337,75 @@ const Scheduler = (() => {
       cost: best.scored.cost,
       breakdown: best.scored.breakdown
     };
+  }
+
+  // Attempts, for every employee's day off, to arrange a Morning shift the day
+  // before and a Night shift the day after — by swapping roles with a
+  // colleague already working that shift that day, only if both remain
+  // qualified for what they end up doing, and only if the swap doesn't make
+  // the overall roster worse.
+  function restOptimizationPass(best, employees, rates, weekStartDate) {
+    const morningRoles = Models.WORK_ROLES.filter(Models.isMorningRole);
+    const nightRoles = Models.WORK_ROLES.filter(Models.isNightRole);
+
+    employees.forEach(emp => {
+      Models.WEEK_DAYS.forEach((day, idx) => {
+        const rolesToday = best.candidate.employeeDay[emp.id][day] || ['Day Off'];
+        if (!rolesToday.includes('Day Off')) return;
+
+        // Day before -> aim for a Morning role
+        if (idx > 0) {
+          best = tryRestSwap(best, employees, emp, Models.WEEK_DAYS[idx - 1], morningRoles, rates, weekStartDate);
+        }
+        // Day after -> aim for a Night role
+        if (idx < Models.WEEK_DAYS.length - 1) {
+          best = tryRestSwap(best, employees, emp, Models.WEEK_DAYS[idx + 1], nightRoles, rates, weekStartDate);
+        }
+      });
+    });
+    return best;
+  }
+
+  function tryRestSwap(best, employees, emp, targetDay, targetRoles, rates, weekStartDate) {
+    const currentRoles = best.candidate.employeeDay[emp.id][targetDay] || ['Day Off'];
+    if (currentRoles.some(r => targetRoles.includes(r))) return best; // already satisfied
+    if (currentRoles.includes('Day Off')) return best; // don't disturb another day off
+
+    const currentRole = currentRoles[0];
+    if (!isQualifiedForRole(emp, targetRoles[0]) && !targetRoles.some(r => isQualifiedForRole(emp, r))) return best;
+
+    for (const targetRole of targetRoles) {
+      if (!isQualifiedForRole(emp, targetRole)) continue;
+      const occupants = best.candidate.schedule[targetDay][targetRole] || [];
+      for (const otherId of occupants) {
+        if (!otherId || otherId === emp.id) continue;
+        const other = employees.find(e => e.id === otherId);
+        if (!other || !isQualifiedForRole(other, currentRole)) continue;
+
+        const trial = cloneCandidate(best.candidate);
+        // swap: emp takes targetRole, other takes currentRole (on targetDay)
+        const roleArr = trial.schedule[targetDay][targetRole];
+        const idxInRole = roleArr.indexOf(otherId);
+        if (idxInRole === -1) continue;
+        roleArr[idxInRole] = emp.id;
+
+        trial.schedule[targetDay][currentRole] = trial.schedule[targetDay][currentRole] || [];
+        const currentArr = trial.schedule[targetDay][currentRole];
+        const empIdxInCurrent = currentArr.indexOf(emp.id);
+        if (empIdxInCurrent !== -1) currentArr[empIdxInCurrent] = otherId;
+        else currentArr.push(otherId);
+
+        trial.employeeDay[emp.id][targetDay] = [targetRole];
+        trial.employeeDay[otherId][targetDay] = [currentRole];
+
+        recomputeRoleCounts(trial, employees, rates, weekStartDate);
+        const scored = scoreCandidate(trial, employees);
+        if (scored.cost < best.scored.cost) {
+          return { candidate: trial, scored };
+        }
+      }
+    }
+    return best;
   }
 
   function cloneCandidate(c) {

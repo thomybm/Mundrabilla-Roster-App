@@ -27,7 +27,7 @@ const ExportXLSX = (() => {
       Models.WEEK_DAYS.forEach(day => {
         if (role === 'Day Off') {
           const names = employees
-            .filter(e => (employeeDay[e.id][day] || []).includes('Day Off'))
+            .filter(e => ((employeeDay[e.id] && employeeDay[e.id][day]) || []).includes('Day Off'))
             .map(e => e.name);
           row.push(names.join(', '));
         } else {

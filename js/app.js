@@ -366,13 +366,18 @@ const App = (() => {
   // ---------------- Export ----------------
   function exportCurrentRoster() {
     if (!state.currentRoster) { toast('Generate a roster first.'); return; }
-    ExportXLSX.exportRoster(
-      state.currentRoster.schedule,
-      state.currentRoster.employeeDay,
-      state.employees,
-      state.currentRoster.weekStartDate
-    );
-    toast('Roster exported.');
+    try {
+      ExportXLSX.exportRoster(
+        state.currentRoster.schedule,
+        state.currentRoster.employeeDay,
+        state.employees,
+        state.currentRoster.weekStartDate
+      );
+      toast('Roster exported.');
+    } catch (err) {
+      console.error('Export failed:', err);
+      toast('Export failed: ' + err.message);
+    }
   }
 
   // ---------------- Full data backup / transfer ----------------
