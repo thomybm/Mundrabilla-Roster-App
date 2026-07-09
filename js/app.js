@@ -276,7 +276,7 @@ const App = (() => {
         iterations: 70
       });
 
-      const perEmployee = Stats.computeFromEmployeeDay(state.employees.filter(e => e.active), result.employeeDay, state.rates);
+      const perEmployee = Stats.computeFromEmployeeDay(state.employees.filter(e => e.active), result.employeeDay, state.rates, state.weekStartDate);
       const quality = Stats.qualityScore(perEmployee, result.warnings);
 
       // Regenerating an already-generated week replaces that week's single
@@ -391,7 +391,7 @@ const App = (() => {
       });
     });
     roster.warnings = warnings;
-    roster.perEmployee = Stats.computeFromEmployeeDay(activeEmps, roster.employeeDay, state.rates);
+    roster.perEmployee = Stats.computeFromEmployeeDay(activeEmps, roster.employeeDay, state.rates, roster.weekStartDate);
     roster.qualityScore = Stats.qualityScore(roster.perEmployee, warnings);
 
     await DB.putRoster(roster);

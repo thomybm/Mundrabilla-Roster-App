@@ -284,7 +284,7 @@ const Scheduler = (() => {
       prefHits * 40 +
       prefMisses * 60 -
       consecutiveBonus * 25 -
-      restBonus * 500;
+      restBonus * 4000;
 
     return {
       cost,

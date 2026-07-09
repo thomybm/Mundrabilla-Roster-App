@@ -7,7 +7,7 @@
 
 const Stats = (() => {
 
-  function computeFromEmployeeDay(employees, employeeDay, rates) {
+  function computeFromEmployeeDay(employees, employeeDay, rates, weekStartDate) {
     const perEmployee = {};
     employees.forEach(e => {
       const roleCounts = {};
@@ -17,9 +17,34 @@ const Stats = (() => {
         earnings: 0, hoursWorked: 0, satShifts: 0, sunShifts: 0,
         weekendOff: 0, weekdayOff: 0,
         roleCounts, prefHits: 0, prefMisses: 0,
-        doubleShifts: 0, daysOff: []
+        doubleShifts: 0, daysOff: [],
+        // Vacation/unavailable days during this specific week — used to
+        // exclude this week from the hours/earnings week-to-week "catch up"
+        // seed (see aggregateHistory), since time off was the employee's own
+        // choice and shouldn't be compensated with extra hours later.
+        timeOffDays: 0
       };
     });
+
+    // Snapshot vacation/unavailable day counts for this exact week, using
+    // each day's real calendar date (local, not UTC — see app.js/scheduler.js
+    // for why toISOString() is avoided here).
+    if (weekStartDate) {
+      const start = new Date(weekStartDate + 'T00:00:00');
+      employees.forEach(e => {
+        let count = 0;
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(start);
+          d.setDate(d.getDate() + i);
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          const dateStr = `${y}-${m}-${day}`;
+          if (e.vacationDates.includes(dateStr) || e.unavailableDates.includes(dateStr)) count += 1;
+        }
+        perEmployee[e.id].timeOffDays = count;
+      });
+    }
 
     Models.WEEK_DAYS.forEach(day => {
       employees.forEach(e => {
@@ -92,7 +117,14 @@ const Stats = (() => {
           agg[st.id] = {
             id: st.id, name: st.name, earnings: 0, hoursWorked: 0, satShifts: 0, sunShifts: 0,
             weekendOff: 0, weekdayOff: 0, roleCounts: {}, prefHits: 0, prefMisses: 0,
-            doubleShifts: 0, rosterCount: 0
+            doubleShifts: 0, rosterCount: 0,
+            // Separate accumulators used ONLY for the hours/earnings week-to-week
+            // "catch up" target: weeks where the employee had vacation or
+            // unavailable days are excluded here, so someone who chose to take
+            // time off isn't nudged into working extra hours to compensate for
+            // it afterward. Sat/Sun and days-off balance still use every week
+            // (see rosterCount above), since that fairness rule stays as-is.
+            hoursWorkedNoTimeOff: 0, earningsNoTimeOff: 0, weeksCountedNoTimeOff: 0
           };
           Models.ROLES.forEach(r => agg[st.id].roleCounts[r] = 0);
         }
@@ -108,6 +140,12 @@ const Stats = (() => {
         a.doubleShifts += st.doubleShifts;
         a.rosterCount += 1;
         Models.ROLES.forEach(r => a.roleCounts[r] += (st.roleCounts[r] || 0));
+
+        if (!st.timeOffDays) {
+          a.hoursWorkedNoTimeOff += (st.hoursWorked || 0);
+          a.earningsNoTimeOff += st.earnings;
+          a.weeksCountedNoTimeOff += 1;
+        }
       });
     });
     return agg;
