@@ -191,6 +191,16 @@ const App = (() => {
     UI.openFloatPrompt(state.defaultFloatCounts);
   }
 
+  function weekDateRange(weekStartDate) {
+    const dates = [];
+    for (let i = 0; i < 7; i++) dates.push(addDays(weekStartDate, i));
+    return dates;
+  }
+  function wasAbsentDuringWeek(employee, weekStartDate) {
+    const dates = weekDateRange(weekStartDate);
+    return dates.some(d => employee.vacationDates.includes(d) || employee.unavailableDates.includes(d));
+  }
+
   function buildHistorySeed() {
     // Rolling fairness seed carried from past rosters (up to the last MAX_ROSTER_HISTORY weeks).
     // hoursWorked carries a strong weight so someone who worked extra hours (or had
@@ -198,15 +208,50 @@ const App = (() => {
     // week, and vice versa — compensating week-to-week rather than resetting to zero.
     // Other factors (earnings, weekend shifts, role mix, preferences) carry a lighter
     // weight so this week's own internal balance still dominates day-to-day fairness.
+    //
+    // EXCEPTION: hours and earnings are averaged only over weeks where the employee
+    // was fully available. A week reduced by vacation/unavailability is not treated
+    // as a shortfall to "pay back" later — that time off was their own choice, not
+    // an imbalance to correct. Saturday/Sunday shift and weekend-days-off balancing
+    // still runs over every stored week regardless, exactly as before.
     const priorWeeksOnly = state.historyRosters.filter(r => r.weekStartDate !== state.weekStartDate);
     const agg = Stats.aggregateHistory(priorWeeksOnly);
+
+    const hoursAgg = {};
+    priorWeeksOnly.forEach(roster => {
+      Object.values(roster.perEmployee || {}).forEach(st => {
+        const employee = state.employees.find(e => e.id === st.id);
+        if (employee && wasAbsentDuringWeek(employee, roster.weekStartDate)) return; // skip this week
+        if (!hoursAgg[st.id]) hoursAgg[st.id] = { hoursSum: 0, earnSum: 0, n: 0 };
+        hoursAgg[st.id].hoursSum += (st.hoursWorked || 0);
+        hoursAgg[st.id].earnSum += (st.earnings || 0);
+        hoursAgg[st.id].n += 1;
+      });
+    });
+
     const seed = {};
+    const hourEntries = Object.values(hoursAgg).filter(h => h.n > 0);
+    const groupAvgHours = hourEntries.length
+      ? hourEntries.reduce((sum, h) => sum + h.hoursSum / h.n, 0) / hourEntries.length
+      : 0;
+    const groupAvgEarnings = hourEntries.length
+      ? hourEntries.reduce((sum, h) => sum + h.earnSum / h.n, 0) / hourEntries.length
+      : 0;
+
     Object.keys(agg).forEach(id => {
       const a = agg[id];
       const n = Math.max(1, a.rosterCount);
+      const h = hoursAgg[id];
+      // If this employee has prior roster history but every one of those
+      // weeks was a vacation/unavailable week, fall back to the group's
+      // average as a neutral baseline (no debt, no bonus) rather than 0 —
+      // seeding at 0 would itself create upward pressure to "catch up" to
+      // everyone else's higher average.
+      const hoursSeed = (h && h.n > 0) ? (h.hoursSum / h.n) : groupAvgHours;
+      const earningsSeed = (h && h.n > 0) ? (h.earnSum / h.n) : groupAvgEarnings;
       seed[id] = {
-        earnings: (a.earnings / n) * 0.3,
-        hoursWorked: (a.hoursWorked / n) * 0.65,
+        earnings: earningsSeed * 0.3,
+        hoursWorked: hoursSeed * 0.65,
         satShifts: (a.satShifts / n) * 0.65,
         sunShifts: (a.sunShifts / n) * 0.65,
         weekendOff: (a.weekendOff / n) * 0.3,

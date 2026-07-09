@@ -209,6 +209,11 @@ const Scheduler = (() => {
     const sunVar = variance(sunArr);
     const offVar = variance(weekendOffArr) + variance(weekdayOffArr);
 
+    // Total weekend days off, summed across everyone: kept low on purpose
+    // (in addition to being evenly distributed via offVar above) so days off
+    // land on weekdays whenever coverage allows it, rather than on Sat/Sun.
+    const totalWeekendOff = weekendOffArr.reduce((a, b) => a + b, 0);
+
     // Weekend (Sat+Sun combined) shift distribution, and a normalized comparison
     // between "hours worked per week" and "weekend shift distribution" so neither
     // dominates the other just because it happens to be on a larger numeric scale.
@@ -274,11 +279,12 @@ const Scheduler = (() => {
       satVar * 300 +
       sunVar * 300 +
       offVar * 300 +
+      totalWeekendOff * 20 +
       roleVarSum * 50 -
       prefHits * 40 +
       prefMisses * 60 -
       consecutiveBonus * 25 -
-      restBonus * 50;
+      restBonus * 500;
 
     return {
       cost,
