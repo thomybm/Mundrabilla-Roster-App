@@ -278,7 +278,7 @@ const Scheduler = (() => {
       prefHits * 40 +
       prefMisses * 60 -
       consecutiveBonus * 25 -
-      restBonus * 15;
+      restBonus * 50;
 
     return {
       cost,
@@ -327,7 +327,13 @@ const Scheduler = (() => {
 
     // Targeted pass: for each day-off, try to swap in a Morning shift the day
     // before and a Night shift the day after (maximizes unbroken rest time).
-    best = restOptimizationPass(best, activeEmployees, rates, weekStartDate);
+    // Run several rounds: a swap made in round 1 can unlock a further swap
+    // that wasn't available before (e.g. a chain of 3 people's shifts).
+    for (let round = 0; round < 4; round++) {
+      const before = best.scored.cost;
+      best = restOptimizationPass(best, activeEmployees, rates, weekStartDate);
+      if (best.scored.cost >= before) break; // no further improvement found
+    }
 
     return {
       schedule: best.candidate.schedule,
