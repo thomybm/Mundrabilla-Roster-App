@@ -1,5 +1,5 @@
 /* sw.js - App shell caching for full offline operation */
-const CACHE_NAME = 'mundrabilla-roster-v15';
+const CACHE_NAME = 'mundrabilla-roster-v16';
 const ASSETS = [
   './',
   './index.html',
@@ -14,7 +14,8 @@ const ASSETS = [
   './js/app.js',
   './vendor/xlsx.full.min.js',
   './icons/icon-192.png',
-  './icons/icon-512.png'
+  './icons/icon-512.png',
+  './icons/logo.png'
 ];
 
 self.addEventListener('install', (event) => {
