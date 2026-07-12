@@ -58,7 +58,7 @@ const Scheduler = (() => {
   }
 
   // ---------- Candidate construction (randomized greedy) ----------
-  function buildCandidate(employees, floatCounts, rates, history, weekStartDate, rng) {
+  function buildCandidate(employees, floatCounts, rates, history, weekStartDate, rng, satRotation, sunRotation) {
     const empIds = employees.map(e => e.id);
     const stats = {};
     empIds.forEach(id => {
@@ -121,14 +121,28 @@ const Scheduler = (() => {
         const scored = candidates.map(e => {
           const st = stats[e.id];
           const rate = rates[dayName] || 8;
-          const loadScore = st.hoursWorked * 0.5 + st.earnings / 100 + st.roleCounts[role] * 2 - prefScore(e, role);
+          let loadScore = st.hoursWorked * 0.5 + st.earnings / 100 + st.roleCounts[role] * 2 - prefScore(e, role);
+          // Weekend day-off rotation: someone who hasn't had this specific
+          // weekend day (Sat or Sun) off in a long time is made progressively
+          // more expensive to schedule for work that day, so the day off
+          // rotates around everyone instead of repeatedly landing on the
+          // same person before others have had a turn.
+          const ROTATION_WEIGHT = 200;
+          if (dayName === 'Sat' && satRotation) loadScore += (satRotation[e.id] || 0) * ROTATION_WEIGHT;
+          if (dayName === 'Sun' && sunRotation) loadScore += (sunRotation[e.id] || 0) * ROTATION_WEIGHT;
           const doublePenalty = assignedToday.has(e.id) ? 1000 : 0; // heavily discourage double shift
           const noise = rng() * 3;
           return { emp: e, cost: loadScore + doublePenalty + noise };
         });
         scored.sort((a, b) => a.cost - b.cost);
-        // pick from top few with weighted randomness for diversity
-        const poolSize = Math.min(3, scored.length);
+        // Pick from the top few candidates with weighted randomness, for
+        // diversity across the many candidate rosters generated. This is
+        // only safe when there's a genuinely larger pool to draw from —
+        // with 3 or fewer candidates left, "top 3" is just "everyone left",
+        // which would make the pick pure chance and silently undermine
+        // carefully-weighted priorities (like the weekend day-off rotation)
+        // exactly when it matters most (few people left to choose between).
+        const poolSize = scored.length > 4 ? 3 : 1;
         const pick = scored[Math.floor(rng() * poolSize)].emp;
 
         schedule[dayName][role] = schedule[dayName][role] || [];
@@ -214,6 +228,14 @@ const Scheduler = (() => {
     // land on weekdays whenever coverage allows it, rather than on Sat/Sun.
     const totalWeekendOff = weekendOffArr.reduce((a, b) => a + b, 0);
 
+    // Days-off COUNT balance: everyone should get the same number of days off
+    // per week where possible. This is normally a side-effect of hoursCV
+    // balance already, but it's made explicit here per direct request —
+    // someone working extra hours via double shifts, for instance, wouldn't
+    // necessarily show up in hoursCV the same way a missing day off would.
+    const daysOffCountArr = ids.map(id => stats[id].weekendOff + stats[id].weekdayOff);
+    const daysOffCountCV = coefVar(daysOffCountArr);
+
     // Weekend (Sat+Sun combined) shift distribution, and a normalized comparison
     // between "hours worked per week" and "weekend shift distribution" so neither
     // dominates the other just because it happens to be on a larger numeric scale.
@@ -221,6 +243,14 @@ const Scheduler = (() => {
     const weekendVar = variance(weekendArr);
     const hoursCV = coefVar(hoursArr);
     const weekendCV = coefVar(weekendArr);
+
+    // Saturday and Sunday rotate independently on purpose — don't let the
+    // optimizer bundle both weekend days off onto the same person in the
+    // same week. Each occurrence is penalized directly.
+    const bothWeekendDaysOffCount = ids.reduce((count, id) => {
+      const offs = stats[id].daysOffThisWeek;
+      return count + (offs.includes('Sat') && offs.includes('Sun') ? 1 : 0);
+    }, 0);
 
     // role distribution variance across all roles
     let roleVarSum = 0;
@@ -275,6 +305,8 @@ const Scheduler = (() => {
       doubleShifts * 1e4 +
       hoursCV * BALANCE_WEIGHT +
       weekendCV * BALANCE_WEIGHT +
+      daysOffCountCV * BALANCE_WEIGHT +
+      bothWeekendDaysOffCount * 2500 +
       earningsVar * 50 +
       satVar * 300 +
       sunVar * 300 +
@@ -290,7 +322,7 @@ const Scheduler = (() => {
       cost,
       breakdown: {
         unfilled, doubleShifts, earningsVar, hoursVar, hoursCV,
-        satVar, sunVar, weekendVar, weekendCV, offVar,
+        satVar, sunVar, weekendVar, weekendCV, offVar, daysOffCountCV, bothWeekendDaysOffCount,
         roleVarSum, prefHits, prefMisses, consecutiveBonus, restBonus
       }
     };
@@ -309,7 +341,7 @@ const Scheduler = (() => {
   function generate(options) {
     const {
       employees, floatCounts, rates, history = {}, weekStartDate,
-      iterations = 60
+      iterations = 60, satRotation = {}, sunRotation = {}
     } = options;
 
     const activeEmployees = employees.filter(e => e.active);
@@ -321,7 +353,7 @@ const Scheduler = (() => {
     const rng = mulberry32(Date.now() % 2147483647);
 
     for (let i = 0; i < iterations; i++) {
-      const candidate = buildCandidate(activeEmployees, floatCounts, rates, history, weekStartDate, rng);
+      const candidate = buildCandidate(activeEmployees, floatCounts, rates, history, weekStartDate, rng, satRotation, sunRotation);
       const scored = scoreCandidate(candidate, activeEmployees);
       if (!best || scored.cost < best.scored.cost) {
         best = { candidate, scored };

@@ -9,7 +9,7 @@
 
 const DB_NAME = 'mundrabilla_roster_db';
 const DB_VERSION = 1;
-const MAX_ROSTER_HISTORY = 5;
+const MAX_ROSTER_HISTORY = 10;
 
 const DB = (() => {
   let dbPromise = null;

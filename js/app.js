@@ -201,6 +201,30 @@ const App = (() => {
     return dates.some(d => employee.vacationDates.includes(d) || employee.unavailableDates.includes(d));
   }
 
+  // How many weeks it's been since each active employee last had this specific
+  // weekend day (Sat or Sun) off, looking back through stored roster history
+  // (most recent = 1 week ago). Vacation/unavailable days count as having had
+  // that day off too — they weren't working it either way. Employees with no
+  // record of ever having that day off within the stored history are treated
+  // as maximally overdue, so they're favored first.
+  function computeWeekendDayOffRotation(day) {
+    const priorWeeks = [...state.historyRosters]
+      .filter(r => r.weekStartDate !== state.weekStartDate)
+      .sort((a, b) => (b.weekStartDate > a.weekStartDate ? 1 : -1));
+
+    const rotation = {};
+    state.employees.filter(e => e.active).forEach(e => {
+      let weeksAgo = null;
+      for (let i = 0; i < priorWeeks.length; i++) {
+        const st = priorWeeks[i].perEmployee && priorWeeks[i].perEmployee[e.id];
+        if (st && st.daysOff && st.daysOff.includes(day)) { weeksAgo = i + 1; break; }
+      }
+      rotation[e.id] = weeksAgo === null ? DB.MAX_ROSTER_HISTORY + 1 : weeksAgo;
+    });
+    return rotation;
+  }
+
+
   function buildHistorySeed() {
     // Rolling fairness seed carried from past rosters (up to the last MAX_ROSTER_HISTORY weeks).
     // hoursWorked carries a strong weight so someone who worked extra hours (or had
@@ -267,13 +291,17 @@ const App = (() => {
   async function runGeneration(floatCounts) {
     try {
       const historySeed = buildHistorySeed();
+      const satRotation = computeWeekendDayOffRotation('Sat');
+      const sunRotation = computeWeekendDayOffRotation('Sun');
       const result = Scheduler.generate({
         employees: state.employees,
         floatCounts,
         rates: state.rates,
         history: historySeed,
         weekStartDate: state.weekStartDate,
-        iterations: 70
+        iterations: 70,
+        satRotation,
+        sunRotation
       });
 
       const perEmployee = Stats.computeFromEmployeeDay(state.employees.filter(e => e.active), result.employeeDay, state.rates, state.weekStartDate);
