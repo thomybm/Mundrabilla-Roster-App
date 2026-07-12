@@ -52,6 +52,34 @@ const App = (() => {
     return toDateStr(d);
   }
 
+  async function tryLoadSeedData() {
+    try {
+      const res = await fetch('./seed-data.json');
+      if (!res.ok) return; // no seed file bundled — perfectly normal, do nothing
+      const data = await res.json();
+      await DB.importAllData(data, 'replace');
+      console.log('Loaded starting data from seed-data.json');
+    } catch (err) {
+      // Missing file, offline with nothing cached yet, or invalid JSON —
+      // all non-fatal. The app just starts empty, same as before this feature.
+      console.log('No seed data loaded (this is fine):', err.message);
+    }
+  }
+
+  async function tryLoadSeedData() {
+    try {
+      const res = await fetch('./seed-data.json', { cache: 'no-store' });
+      if (!res.ok) return; // file not present — fine, just skip silently
+      const data = await res.json();
+      await DB.importAllData(data, 'replace');
+      console.log('Loaded bundled seed-data.json for first run.');
+    } catch (err) {
+      // No seed file, or it's malformed — not an error worth bothering the
+      // person with, the app just starts empty as it always did before.
+      console.log('No seed data loaded:', err.message);
+    }
+  }
+
   // ---------------- Init ----------------
   async function init() {
     if ('serviceWorker' in navigator) {
@@ -59,6 +87,16 @@ const App = (() => {
     }
 
     state.employees = await DB.getAllEmployees();
+
+    // First-run only: if this device has never had any employees stored,
+    // try loading a bundled seed-data.json shipped alongside the app so new
+    // devices/browsers start pre-populated instead of empty. This never runs
+    // again once real data exists, so it can't clobber anything later.
+    if (state.employees.length === 0) {
+      await tryLoadSeedData();
+      state.employees = await DB.getAllEmployees();
+    }
+
     const storedRates = await DB.getSetting('rates');
     if (storedRates) state.rates = storedRates;
     const storedFloat = await DB.getSetting('defaultFloatCounts');
@@ -75,6 +113,22 @@ const App = (() => {
     }
 
     state.historyRosters = await DB.getAllRosters();
+
+    // First-run seed: if this device has never had any data entered (fresh
+    // install / fresh browser), try loading a bundled seed-data.json with a
+    // starting set of employees/settings. This is entirely optional — most
+    // deployments won't have this file, and a missing/404 file is silently
+    // ignored. See README notes in the repo for how to generate one.
+    if (state.employees.length === 0 && state.historyRosters.length === 0) {
+      await tryLoadSeedData();
+      state.employees = await DB.getAllEmployees();
+      const seededRates = await DB.getSetting('rates');
+      if (seededRates) state.rates = seededRates;
+      const seededFloat = await DB.getSetting('defaultFloatCounts');
+      if (seededFloat) state.defaultFloatCounts = seededFloat;
+      state.historyRosters = await DB.getAllRosters();
+    }
+
     for (const roster of state.historyRosters) {
       const corrected = mostRecentWednesday(parseLocalDate(roster.weekStartDate));
       if (corrected !== roster.weekStartDate) {
@@ -91,6 +145,8 @@ const App = (() => {
       onTabChange: UI.showTab,
       onGenerateClick: openFloatPrompt,
       onExportClick: exportCurrentRoster,
+      onSwapDays: swapDays,
+      onPrintPoster: printPoster,
       onPrevWeek: () => changeWeek(-7),
       onNextWeek: () => changeWeek(7),
       onWeekPicked: onWeekPicked,
@@ -434,6 +490,42 @@ const App = (() => {
     state.weekStartDate = roster.weekStartDate;
     renderAll();
     UI.showTab('roster');
+  }
+
+  // ---------------- Swap days ----------------
+  async function swapDays(dayA, dayB) {
+    if (!state.currentRoster) { toast('Generate a roster first.'); return; }
+    if (dayA === dayB) { toast('Choose two different days to swap.'); return; }
+    const roster = state.currentRoster;
+
+    // Swap the whole day's role assignments
+    const scheduleA = roster.schedule[dayA];
+    const scheduleB = roster.schedule[dayB];
+    roster.schedule[dayA] = scheduleB;
+    roster.schedule[dayB] = scheduleA;
+
+    // Swap each employee's assignment for those two specific days
+    Object.keys(roster.employeeDay).forEach(empId => {
+      const a = roster.employeeDay[empId][dayA];
+      const b = roster.employeeDay[empId][dayB];
+      roster.employeeDay[empId][dayA] = b;
+      roster.employeeDay[empId][dayB] = a;
+    });
+
+    // Swap that day's Float requirement too, since it travels with the day
+    const floatA = roster.floatCounts[dayA];
+    const floatB = roster.floatCounts[dayB];
+    roster.floatCounts[dayA] = floatB;
+    roster.floatCounts[dayB] = floatA;
+
+    await recalcAndPersist();
+    toast(`Swapped ${dayA} and ${dayB}.`);
+  }
+
+  // ---------------- Print / PDF poster ----------------
+  function printPoster() {
+    if (!state.currentRoster) { toast('Generate a roster first.'); return; }
+    window.print();
   }
 
   // ---------------- Export ----------------

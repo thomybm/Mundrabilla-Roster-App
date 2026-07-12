@@ -22,6 +22,21 @@ const UI = (() => {
     document.getElementById('weekStartPicker').addEventListener('change', (e) => H.onWeekPicked(e.target.value));
     document.getElementById('btnAddEmployee').addEventListener('click', () => H.onAddEmployee());
 
+    const dayAsel = document.getElementById('swapDayA');
+    const dayBsel = document.getElementById('swapDayB');
+    Models.WEEK_DAYS.forEach((d, i) => {
+      dayAsel.innerHTML += `<option value="${d}">${d}</option>`;
+      dayBsel.innerHTML += `<option value="${d}">${d}</option>`;
+    });
+    dayBsel.selectedIndex = 1; // default to two different days
+    document.getElementById('btnSwapDays').addEventListener('click', () => {
+      const a = dayAsel.value, b = dayBsel.value;
+      if (a === b) { alert('Please choose two different days to swap.'); return; }
+      H.onSwapDays(a, b);
+    });
+
+    document.getElementById('btnPrintPoster').addEventListener('click', () => H.onPrintPoster());
+
     document.getElementById('btnCancelEmployee').addEventListener('click', closeEmployeeModal);
     document.getElementById('btnSaveEmployee').addEventListener('click', () => {
       const data = collectEmployeeForm();

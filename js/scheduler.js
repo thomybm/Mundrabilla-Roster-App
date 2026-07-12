@@ -130,6 +130,14 @@ const Scheduler = (() => {
           const ROTATION_WEIGHT = 200;
           if (dayName === 'Sat' && satRotation) loadScore += (satRotation[e.id] || 0) * ROTATION_WEIGHT;
           if (dayName === 'Sun' && sunRotation) loadScore += (sunRotation[e.id] || 0) * ROTATION_WEIGHT;
+          // Sat/Sun rotate independently, but nobody should get BOTH weekend
+          // days off in the same week. Saturday is always built before Sunday
+          // (see WEEK_DAYS order), so by the time Sunday is assigned we
+          // already know who took Saturday off. Strongly prefer working them
+          // on Sunday instead — large enough to override even a maximum
+          // rotation "overdue" score, since this is meant to hold as close to
+          // an always-applies rule as the roster allows.
+          if (dayName === 'Sun' && st.daysOffThisWeek.includes('Sat')) loadScore -= 100000;
           const doublePenalty = assignedToday.has(e.id) ? 1000 : 0; // heavily discourage double shift
           const noise = rng() * 3;
           return { emp: e, cost: loadScore + doublePenalty + noise };

@@ -58,6 +58,15 @@
           <button id="btnExport" class="btn-secondary">⬇ Export to Excel</button>
         </div>
       </div>
+      <div class="actions roster-toolbar">
+        <span class="muted" style="margin-right:4px;">Swap two days:</span>
+        <select id="swapDayA"></select>
+        <span class="muted">⇄</span>
+        <select id="swapDayB"></select>
+        <button id="btnSwapDays" class="btn-secondary">Swap</button>
+        <div style="flex:1"></div>
+        <button id="btnPrintPoster" class="btn-secondary">🖨 Print / Save as PDF</button>
+      </div>
       <div id="rosterWarnings" class="warnings-box" style="display:none;"></div>
       <div class="table-wrap">
         <table id="rosterTable" class="roster-table">
@@ -66,6 +75,18 @@
         </table>
       </div>
     </section>
+
+    <!-- PRINT-ONLY POSTER VIEW (hidden on screen, shown only when printing) -->
+    <div id="printPoster" class="print-only">
+      <div class="print-header">
+        <img src="icons/logo.png" alt="Mundrabilla Roadhouse" class="print-logo">
+        <div>
+          <h1 id="printTitle">Weekly Roster</h1>
+          <p id="printWeekLabel"></p>
+        </div>
+      </div>
+      <table id="printTable" class="print-table"></table>
+    </div>
 
     <!-- EMPLOYEES -->
     <section id="tab-employees" class="tab-panel">

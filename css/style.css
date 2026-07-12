@@ -86,6 +86,7 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 .tab-panel.active { display: block; }
 
 .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.roster-toolbar { margin-bottom: 14px; }
 
 button.btn-primary, button.btn-secondary, button.btn-danger {
   border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 600;
@@ -212,4 +213,35 @@ table.roster-table td.role-label { font-weight: 700; white-space: nowrap; }
   .tabs { order: 3; width: 100%; justify-content: space-between; }
   main { padding: 12px; }
   table.roster-table th { position: static; }
+}
+
+/* ---------- Print (Roster poster for the wall) ---------- */
+@media print {
+  @page { size: A4 landscape; margin: 10mm; }
+
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+
+  body { background: white; }
+
+  .topbar, .roster-toolbar, .warnings-box, .toast,
+  .modal-overlay, .panel-header .actions {
+    display: none !important;
+  }
+
+  /* Only the Roster tab's table prints, regardless of which tab was active */
+  .tab-panel { display: none !important; }
+  #tab-roster { display: block !important; }
+
+  main { padding: 0; max-width: none; }
+
+  .panel-header { margin-bottom: 10px; }
+  .panel-header h2 { font-size: 22px; }
+
+  .table-wrap { box-shadow: none; border-radius: 0; }
+  table.roster-table { width: 100%; min-width: 0; table-layout: fixed; }
+  table.roster-table th, table.roster-table td { font-size: 11px; padding: 6px; }
+  table.roster-table td.role-label { font-size: 12px; }
+
+  .cell-slot { background: transparent !important; outline: none !important; cursor: default; }
+  .cell-slot .remove-x, .add-float-btn { display: none !important; }
 }

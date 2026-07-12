@@ -1,0 +1,1565 @@
+{
+  "exportedAt": 1783592603818,
+  "appVersion": 1,
+  "employees": [
+    {
+      "id": "id_mradzjiw_kebthla",
+      "name": "Ann",
+      "active": true,
+      "qualifiedRoles": [
+        "Kitchen Morning",
+        "Kitchen Night"
+      ],
+      "preferredRoles": [],
+      "avoidRoles": [],
+      "shiftPreference": "None",
+      "vacationDates": [],
+      "unavailableDates": [],
+      "notes": ""
+    },
+    {
+      "id": "id_mradzseb_gswoei2",
+      "name": "Amy",
+      "active": true,
+      "qualifiedRoles": [
+        "Shop Morning",
+        "Shop Night"
+      ],
+      "preferredRoles": [],
+      "avoidRoles": [],
+      "shiftPreference": "None",
+      "vacationDates": [],
+      "unavailableDates": [],
+      "notes": ""
+    },
+    {
+      "id": "id_mradzydl_62w3ia7",
+      "name": "Harry",
+      "active": true,
+      "qualifiedRoles": [
+        "Kitchen Morning",
+        "Kitchen Night"
+      ],
+      "preferredRoles": [],
+      "avoidRoles": [],
+      "shiftPreference": "None",
+      "vacationDates": [],
+      "unavailableDates": [],
+      "notes": ""
+    },
+    {
+      "id": "id_mrae04pu_vnczpyj",
+      "name": "Izzy",
+      "active": true,
+      "qualifiedRoles": [
+        "Shop Morning",
+        "Shop Night",
+        "Housekeeping"
+      ],
+      "preferredRoles": [],
+      "avoidRoles": [],
+      "shiftPreference": "None",
+      "vacationDates": [],
+      "unavailableDates": [],
+      "notes": ""
+    },
+    {
+      "id": "id_mrae0etq_bkdbcj6",
+      "name": "Manon",
+      "active": false,
+      "qualifiedRoles": [
+        "Kitchen Morning",
+        "Shop Morning",
+        "Kitchen Night",
+        "Shop Night",
+        "Housekeeping"
+      ],
+      "preferredRoles": [],
+      "avoidRoles": [],
+      "shiftPreference": "None",
+      "vacationDates": [],
+      "unavailableDates": [],
+      "notes": ""
+    },
+    {
+      "id": "id_mrae4gee_3wxky00",
+      "name": "Oceane",
+      "active": false,
+      "qualifiedRoles": [
+        "Shop Morning",
+        "Shop Night",
+        "Housekeeping"
+      ],
+      "preferredRoles": [],
+      "avoidRoles": [],
+      "shiftPreference": "None",
+      "vacationDates": [],
+      "unavailableDates": [],
+      "notes": ""
+    },
+    {
+      "id": "id_mrae4on6_2ogvrmg",
+      "name": "Delfi",
+      "active": true,
+      "qualifiedRoles": [
+        "Kitchen Morning",
+        "Shop Morning",
+        "Kitchen Night",
+        "Shop Night",
+        "Housekeeping"
+      ],
+      "preferredRoles": [],
+      "avoidRoles": [],
+      "shiftPreference": "None",
+      "vacationDates": [],
+      "unavailableDates": [],
+      "notes": ""
+    },
+    {
+      "id": "id_mrae6409_kgdvq7x",
+      "name": "Thomi",
+      "active": true,
+      "qualifiedRoles": [
+        "Kitchen Morning",
+        "Shop Morning",
+        "Kitchen Night",
+        "Shop Night",
+        "Housekeeping"
+      ],
+      "preferredRoles": [],
+      "avoidRoles": [],
+      "shiftPreference": "None",
+      "vacationDates": [],
+      "unavailableDates": [],
+      "notes": ""
+    },
+    {
+      "id": "id_mrae6e1r_10nr3sq",
+      "name": "Nathan",
+      "active": true,
+      "qualifiedRoles": [
+        "Shop Morning",
+        "Shop Night",
+        "Housekeeping"
+      ],
+      "preferredRoles": [],
+      "avoidRoles": [],
+      "shiftPreference": "None",
+      "vacationDates": [],
+      "unavailableDates": [],
+      "notes": ""
+    }
+  ],
+  "rosters": [
+    {
+      "id": "id_mrdcvtyu_n8j2pqw",
+      "createdAt": 1783592474877,
+      "weekStartDate": "2026-07-08",
+      "schedule": {
+        "Wed": {
+          "Kitchen Morning": [
+            "id_mrae6409_kgdvq7x"
+          ],
+          "Shop Morning": [
+            "id_mradzseb_gswoei2"
+          ],
+          "Kitchen Night": [
+            "id_mradzydl_62w3ia7"
+          ],
+          "Shop Night": [
+            "id_mrae04pu_vnczpyj"
+          ],
+          "Housekeeping": [
+            "id_mrae6e1r_10nr3sq"
+          ]
+        },
+        "Thu": {
+          "Kitchen Morning": [
+            "id_mradzydl_62w3ia7"
+          ],
+          "Shop Morning": [
+            "id_mrae04pu_vnczpyj"
+          ],
+          "Kitchen Night": [
+            "id_mrae4on6_2ogvrmg"
+          ],
+          "Shop Night": [
+            "id_mradzseb_gswoei2"
+          ],
+          "Housekeeping": [
+            "id_mrae6e1r_10nr3sq"
+          ],
+          "Float": [
+            "id_mrae6409_kgdvq7x"
+          ]
+        },
+        "Fri": {
+          "Kitchen Morning": [
+            "id_mrae6409_kgdvq7x"
+          ],
+          "Shop Morning": [
+            "id_mrae6e1r_10nr3sq"
+          ],
+          "Kitchen Night": [
+            "id_mradzydl_62w3ia7"
+          ],
+          "Shop Night": [
+            "id_mrae4on6_2ogvrmg"
+          ],
+          "Housekeeping": [
+            "id_mrae04pu_vnczpyj"
+          ]
+        },
+        "Sat": {
+          "Kitchen Morning": [
+            "id_mrae6409_kgdvq7x"
+          ],
+          "Shop Morning": [
+            "id_mradzseb_gswoei2"
+          ],
+          "Kitchen Night": [
+            "id_mradzydl_62w3ia7"
+          ],
+          "Shop Night": [
+            "id_mrae04pu_vnczpyj"
+          ],
+          "Housekeeping": [
+            "id_mrae4on6_2ogvrmg"
+          ]
+        },
+        "Sun": {
+          "Kitchen Morning": [
+            "id_mrae4on6_2ogvrmg"
+          ],
+          "Shop Morning": [
+            "id_mradzseb_gswoei2"
+          ],
+          "Kitchen Night": [
+            "id_mradzydl_62w3ia7"
+          ],
+          "Shop Night": [
+            "id_mrae6e1r_10nr3sq"
+          ],
+          "Housekeeping": [
+            "id_mrae04pu_vnczpyj"
+          ]
+        },
+        "Mon": {
+          "Kitchen Morning": [
+            "id_mradzydl_62w3ia7"
+          ],
+          "Shop Morning": [
+            "id_mrae6e1r_10nr3sq"
+          ],
+          "Kitchen Night": [
+            "id_mrae6409_kgdvq7x"
+          ],
+          "Shop Night": [
+            "id_mradzseb_gswoei2"
+          ],
+          "Housekeeping": [
+            "id_mrae4on6_2ogvrmg"
+          ]
+        },
+        "Tue": {
+          "Kitchen Morning": [
+            "id_mrae4on6_2ogvrmg"
+          ],
+          "Shop Morning": [
+            "id_mrae6e1r_10nr3sq"
+          ],
+          "Kitchen Night": [
+            "id_mradzjiw_kebthla"
+          ],
+          "Shop Night": [
+            "id_mrae04pu_vnczpyj"
+          ],
+          "Housekeeping": [
+            "id_mrae6409_kgdvq7x"
+          ]
+        }
+      },
+      "employeeDay": {
+        "id_mradzjiw_kebthla": {
+          "Wed": [
+            "Day Off"
+          ],
+          "Thu": [
+            "Day Off"
+          ],
+          "Fri": [
+            "Day Off"
+          ],
+          "Sat": [
+            "Day Off"
+          ],
+          "Sun": [
+            "Day Off"
+          ],
+          "Mon": [
+            "Day Off"
+          ],
+          "Tue": [
+            "Kitchen Night"
+          ]
+        },
+        "id_mradzseb_gswoei2": {
+          "Wed": [
+            "Shop Morning"
+          ],
+          "Thu": [
+            "Shop Night"
+          ],
+          "Fri": [
+            "Day Off"
+          ],
+          "Sat": [
+            "Shop Morning"
+          ],
+          "Sun": [
+            "Shop Morning"
+          ],
+          "Mon": [
+            "Shop Night"
+          ],
+          "Tue": [
+            "Day Off"
+          ]
+        },
+        "id_mradzydl_62w3ia7": {
+          "Wed": [
+            "Kitchen Night"
+          ],
+          "Thu": [
+            "Kitchen Morning"
+          ],
+          "Fri": [
+            "Kitchen Night"
+          ],
+          "Sat": [
+            "Kitchen Night"
+          ],
+          "Sun": [
+            "Kitchen Night"
+          ],
+          "Mon": [
+            "Kitchen Morning"
+          ],
+          "Tue": [
+            "Day Off"
+          ]
+        },
+        "id_mrae04pu_vnczpyj": {
+          "Wed": [
+            "Shop Night"
+          ],
+          "Thu": [
+            "Shop Morning"
+          ],
+          "Fri": [
+            "Housekeeping"
+          ],
+          "Sat": [
+            "Shop Night"
+          ],
+          "Sun": [
+            "Housekeeping"
+          ],
+          "Mon": [
+            "Day Off"
+          ],
+          "Tue": [
+            "Shop Night"
+          ]
+        },
+        "id_mrae4on6_2ogvrmg": {
+          "Wed": [
+            "Day Off"
+          ],
+          "Thu": [
+            "Kitchen Night"
+          ],
+          "Fri": [
+            "Shop Night"
+          ],
+          "Sat": [
+            "Housekeeping"
+          ],
+          "Sun": [
+            "Kitchen Morning"
+          ],
+          "Mon": [
+            "Housekeeping"
+          ],
+          "Tue": [
+            "Kitchen Morning"
+          ]
+        },
+        "id_mrae6409_kgdvq7x": {
+          "Wed": [
+            "Kitchen Morning"
+          ],
+          "Thu": [
+            "Float"
+          ],
+          "Fri": [
+            "Kitchen Morning"
+          ],
+          "Sat": [
+            "Kitchen Morning"
+          ],
+          "Sun": [
+            "Day Off"
+          ],
+          "Mon": [
+            "Kitchen Night"
+          ],
+          "Tue": [
+            "Housekeeping"
+          ]
+        },
+        "id_mrae6e1r_10nr3sq": {
+          "Wed": [
+            "Housekeeping"
+          ],
+          "Thu": [
+            "Housekeeping"
+          ],
+          "Fri": [
+            "Shop Morning"
+          ],
+          "Sat": [
+            "Day Off"
+          ],
+          "Sun": [
+            "Shop Night"
+          ],
+          "Mon": [
+            "Shop Morning"
+          ],
+          "Tue": [
+            "Shop Morning"
+          ]
+        }
+      },
+      "floatCounts": {
+        "Wed": 0,
+        "Thu": 1,
+        "Fri": 0,
+        "Sat": 0,
+        "Sun": 0,
+        "Mon": 0,
+        "Tue": 0
+      },
+      "warnings": [],
+      "perEmployee": {
+        "id_mradzjiw_kebthla": {
+          "id": "id_mradzjiw_kebthla",
+          "name": "Ann",
+          "earnings": 258.48,
+          "hoursWorked": 8,
+          "satShifts": 0,
+          "sunShifts": 0,
+          "weekendOff": 2,
+          "weekdayOff": 4,
+          "roleCounts": {
+            "Kitchen Morning": 0,
+            "Shop Morning": 0,
+            "Kitchen Night": 1,
+            "Shop Night": 0,
+            "Float": 0,
+            "Housekeeping": 0,
+            "Day Off": 6
+          },
+          "prefHits": 0,
+          "prefMisses": 0,
+          "doubleShifts": 0,
+          "daysOff": [
+            "Wed",
+            "Thu",
+            "Fri",
+            "Sat",
+            "Sun",
+            "Mon"
+          ]
+        },
+        "id_mradzseb_gswoei2": {
+          "id": "id_mradzseb_gswoei2",
+          "name": "Amy",
+          "earnings": 1447.6000000000001,
+          "hoursWorked": 40,
+          "satShifts": 1,
+          "sunShifts": 1,
+          "weekendOff": 0,
+          "weekdayOff": 2,
+          "roleCounts": {
+            "Kitchen Morning": 0,
+            "Shop Morning": 3,
+            "Kitchen Night": 0,
+            "Shop Night": 2,
+            "Float": 0,
+            "Housekeeping": 0,
+            "Day Off": 2
+          },
+          "prefHits": 0,
+          "prefMisses": 0,
+          "doubleShifts": 0,
+          "daysOff": [
+            "Fri",
+            "Tue"
+          ]
+        },
+        "id_mradzydl_62w3ia7": {
+          "id": "id_mradzydl_62w3ia7",
+          "name": "Harry",
+          "earnings": 1706.0800000000002,
+          "hoursWorked": 48,
+          "satShifts": 1,
+          "sunShifts": 1,
+          "weekendOff": 0,
+          "weekdayOff": 1,
+          "roleCounts": {
+            "Kitchen Morning": 2,
+            "Shop Morning": 0,
+            "Kitchen Night": 4,
+            "Shop Night": 0,
+            "Float": 0,
+            "Housekeeping": 0,
+            "Day Off": 1
+          },
+          "prefHits": 0,
+          "prefMisses": 0,
+          "doubleShifts": 0,
+          "daysOff": [
+            "Tue"
+          ]
+        },
+        "id_mrae04pu_vnczpyj": {
+          "id": "id_mrae04pu_vnczpyj",
+          "name": "Izzy",
+          "earnings": 1706.0800000000002,
+          "hoursWorked": 48,
+          "satShifts": 1,
+          "sunShifts": 1,
+          "weekendOff": 0,
+          "weekdayOff": 1,
+          "roleCounts": {
+            "Kitchen Morning": 0,
+            "Shop Morning": 1,
+            "Kitchen Night": 0,
+            "Shop Night": 3,
+            "Float": 0,
+            "Housekeeping": 2,
+            "Day Off": 1
+          },
+          "prefHits": 0,
+          "prefMisses": 0,
+          "doubleShifts": 0,
+          "daysOff": [
+            "Mon"
+          ]
+        },
+        "id_mrae4on6_2ogvrmg": {
+          "id": "id_mrae4on6_2ogvrmg",
+          "name": "Delfi",
+          "earnings": 1706.0800000000002,
+          "hoursWorked": 48,
+          "satShifts": 1,
+          "sunShifts": 1,
+          "weekendOff": 0,
+          "weekdayOff": 1,
+          "roleCounts": {
+            "Kitchen Morning": 2,
+            "Shop Morning": 0,
+            "Kitchen Night": 1,
+            "Shop Night": 1,
+            "Float": 0,
+            "Housekeeping": 2,
+            "Day Off": 1
+          },
+          "prefHits": 0,
+          "prefMisses": 0,
+          "doubleShifts": 0,
+          "daysOff": [
+            "Wed"
+          ]
+        },
+        "id_mrae6409_kgdvq7x": {
+          "id": "id_mrae6409_kgdvq7x",
+          "name": "Thomi",
+          "earnings": 1602.64,
+          "hoursWorked": 48,
+          "satShifts": 1,
+          "sunShifts": 0,
+          "weekendOff": 1,
+          "weekdayOff": 0,
+          "roleCounts": {
+            "Kitchen Morning": 3,
+            "Shop Morning": 0,
+            "Kitchen Night": 1,
+            "Shop Night": 0,
+            "Float": 1,
+            "Housekeeping": 1,
+            "Day Off": 1
+          },
+          "prefHits": 0,
+          "prefMisses": 0,
+          "doubleShifts": 0,
+          "daysOff": [
+            "Sun"
+          ]
+        },
+        "id_mrae6e1r_10nr3sq": {
+          "id": "id_mrae6e1r_10nr3sq",
+          "name": "Nathan",
+          "earnings": 1654.3200000000002,
+          "hoursWorked": 48,
+          "satShifts": 0,
+          "sunShifts": 1,
+          "weekendOff": 1,
+          "weekdayOff": 0,
+          "roleCounts": {
+            "Kitchen Morning": 0,
+            "Shop Morning": 3,
+            "Kitchen Night": 0,
+            "Shop Night": 1,
+            "Float": 0,
+            "Housekeeping": 2,
+            "Day Off": 1
+          },
+          "prefHits": 0,
+          "prefMisses": 0,
+          "doubleShifts": 0,
+          "daysOff": [
+            "Sat"
+          ]
+        }
+      },
+      "qualityScore": 56.9,
+      "cost": 726734.4885768568
+    },
+    {
+      "id": "id_mrae6jj1_rs286iq",
+      "createdAt": 1783413288843,
+      "weekStartDate": "2026-07-01",
+      "schedule": {
+        "Wed": {
+          "Kitchen Morning": [
+            "id_mradzydl_62w3ia7"
+          ],
+          "Shop Morning": [
+            "id_mrae04pu_vnczpyj"
+          ],
+          "Kitchen Night": [
+            "id_mradzjiw_kebthla"
+          ],
+          "Shop Night": [
+            "id_mrae4on6_2ogvrmg"
+          ],
+          "Housekeeping": [
+            "id_mrae6409_kgdvq7x"
+          ]
+        },
+        "Thu": {
+          "Kitchen Morning": [
+            "id_mradzydl_62w3ia7"
+          ],
+          "Shop Morning": [
+            "id_mrae04pu_vnczpyj"
+          ],
+          "Kitchen Night": [
+            "id_mradzjiw_kebthla"
+          ],
+          "Shop Night": [
+            "id_mrae4on6_2ogvrmg"
+          ],
+          "Housekeeping": [
+            "id_mrae6409_kgdvq7x"
+          ]
+        },
+        "Fri": {
+          "Kitchen Morning": [
+            "id_mradzjiw_kebthla"
+          ],
+          "Shop Morning": [
+            "id_mrae4on6_2ogvrmg"
+          ],
+          "Kitchen Night": [
+            "id_mradzydl_62w3ia7"
+          ],
+          "Shop Night": [
+            "id_mrae0etq_bkdbcj6"
+          ],
+          "Housekeeping": [
+            "id_mrae04pu_vnczpyj"
+          ]
+        },
+        "Sat": {
+          "Kitchen Morning": [
+            "id_mradzydl_62w3ia7"
+          ],
+          "Shop Morning": [
+            "id_mrae0etq_bkdbcj6"
+          ],
+          "Kitchen Night": [
+            "id_mrae4on6_2ogvrmg"
+          ],
+          "Shop Night": [
+            "id_mrae6409_kgdvq7x"
+          ],
+          "Housekeeping": [
+            "id_mrae04pu_vnczpyj"
+          ]
+        },
+        "Sun": {
+          "Kitchen Morning": [
+            "id_mradzydl_62w3ia7"
+          ],
+          "Shop Morning": [
+            "id_mrae04pu_vnczpyj"
+          ],
+          "Kitchen Night": [
+            "id_mradzjiw_kebthla"
+          ],
+          "Shop Night": [
+            "id_mrae6409_kgdvq7x"
+          ],
+          "Housekeeping": [
+            "id_mrae0etq_bkdbcj6"
+          ]
+        },
+        "Mon": {
+          "Kitchen Morning": [
+            "id_mrae0etq_bkdbcj6"
+          ],
+          "Shop Morning": [
+            "id_mrae4on6_2ogvrmg"
+          ],
+          "Kitchen Night": [
+            "id_mradzjiw_kebthla"
+          ],
+          "Shop Night": [
+            "id_mrae6409_kgdvq7x"
+          ],
+          "Housekeeping": [
+            "id_mrae04pu_vnczpyj"
+          ]
+        },
+        "Tue": {
+          "Kitchen Morning": [
+            "id_mrae0etq_bkdbcj6"
+          ],
+          "Shop Morning": [
+            "id_mrae6409_kgdvq7x"
+          ],
+          "Kitchen Night": [
+            "id_mradzydl_62w3ia7"
+          ],
+          "Shop Night": [
+            "id_mrae04pu_vnczpyj"
+          ],
+          "Housekeeping": [
+            "id_mrae4on6_2ogvrmg"
+          ]
+        }
+      },
+      "employeeDay": {
+        "id_mradzjiw_kebthla": {
+          "Wed": [
+            "Kitchen Night"
+          ],
+          "Thu": [
+            "Kitchen Night"
+          ],
+          "Fri": [
+            "Kitchen Morning"
+          ],
+          "Sat": [
+            "Day Off"
+          ],
+          "Sun": [
+            "Kitchen Night"
+          ],
+          "Mon": [
+            "Kitchen Night"
+          ],
+          "Tue": [
+            "Day Off"
+          ]
+        },
+        "id_mradzydl_62w3ia7": {
+          "Wed": [
+            "Kitchen Morning"
+          ],
+          "Thu": [
+            "Kitchen Morning"
+          ],
+          "Fri": [
+            "Kitchen Night"
+          ],
+          "Sat": [
+            "Kitchen Morning"
+          ],
+          "Sun": [
+            "Kitchen Morning"
+          ],
+          "Mon": [
+            "Day Off"
+          ],
+          "Tue": [
+            "Kitchen Night"
+          ]
+        },
+        "id_mrae04pu_vnczpyj": {
+          "Wed": [
+            "Shop Morning"
+          ],
+          "Thu": [
+            "Shop Morning"
+          ],
+          "Fri": [
+            "Housekeeping"
+          ],
+          "Sat": [
+            "Housekeeping"
+          ],
+          "Sun": [
+            "Shop Morning"
+          ],
+          "Mon": [
+            "Housekeeping"
+          ],
+          "Tue": [
+            "Shop Night"
+          ]
+        },
+        "id_mrae0etq_bkdbcj6": {
+          "Wed": [
+            "Day Off"
+          ],
+          "Thu": [
+            "Day Off"
+          ],
+          "Fri": [
+            "Shop Night"
+          ],
+          "Sat": [
+            "Shop Morning"
+          ],
+          "Sun": [
+            "Housekeeping"
+          ],
+          "Mon": [
+            "Kitchen Morning"
+          ],
+          "Tue": [
+            "Kitchen Morning"
+          ]
+        },
+        "id_mrae4on6_2ogvrmg": {
+          "Wed": [
+            "Shop Night"
+          ],
+          "Thu": [
+            "Shop Night"
+          ],
+          "Fri": [
+            "Shop Morning"
+          ],
+          "Sat": [
+            "Kitchen Night"
+          ],
+          "Sun": [
+            "Day Off"
+          ],
+          "Mon": [
+            "Shop Morning"
+          ],
+          "Tue": [
+            "Housekeeping"
+          ]
+        },
+        "id_mrae6409_kgdvq7x": {
+          "Wed": [
+            "Housekeeping"
+          ],
+          "Thu": [
+            "Housekeeping"
+          ],
+          "Fri": [
+            "Day Off"
+          ],
+          "Sat": [
+            "Shop Night"
+          ],
+          "Sun": [
+            "Shop Night"
+          ],
+          "Mon": [
+            "Shop Night"
+          ],
+          "Tue": [
+            "Shop Morning"
+          ]
+        }
+      },
+      "floatCounts": {
+        "Wed": 0,
+        "Thu": 0,
+        "Fri": 0,
+        "Sat": 0,
+        "Sun": 0,
+        "Mon": 0,
+        "Tue": 0
+      },
+      "warnings": [],
+      "perEmployee": {
+        "id_mradzjiw_kebthla": {
+          "id": "id_mradzjiw_kebthla",
+          "name": "Ann",
+          "earnings": 1395.8400000000001,
+          "hoursWorked": 40,
+          "satShifts": 0,
+          "sunShifts": 1,
+          "weekendOff": 1,
+          "weekdayOff": 1,
+          "roleCounts": {
+            "Kitchen Morning": 1,
+            "Shop Morning": 0,
+            "Kitchen Night": 4,
+            "Shop Night": 0,
+            "Float": 0,
+            "Housekeeping": 0,
+            "Day Off": 2
+          },
+          "prefHits": 0,
+          "prefMisses": 0,
+          "doubleShifts": 0,
+          "daysOff": [
+            "Sat",
+            "Tue"
+          ]
+        },
+        "id_mradzydl_62w3ia7": {
+          "id": "id_mradzydl_62w3ia7",
+          "name": "Harry",
+          "earnings": 1706.0800000000002,
+          "hoursWorked": 48,
+          "satShifts": 1,
+          "sunShifts": 1,
+          "weekendOff": 0,
+          "weekdayOff": 1,
+          "roleCounts": {
+            "Kitchen Morning": 4,
+            "Shop Morning": 0,
+            "Kitchen Night": 2,
+            "Shop Night": 0,
+            "Float": 0,
+            "Housekeeping": 0,
+            "Day Off": 1
+          },
+          "prefHits": 0,
+          "prefMisses": 0,
+          "doubleShifts": 0,
+          "daysOff": [
+            "Mon"
+          ]
+        },
+        "id_mrae04pu_vnczpyj": {
+          "id": "id_mrae04pu_vnczpyj",
+          "name": "Izzy",
+          "earnings": 1964.5600000000002,
+          "hoursWorked": 56,
+          "satShifts": 1,
+          "sunShifts": 1,
+          "weekendOff": 0,
+          "weekdayOff": 0,
+          "roleCounts": {
+            "Kitchen Morning": 0,
+            "Shop Morning": 3,
+            "Kitchen Night": 0,
+            "Shop Night": 1,
+            "Float": 0,
+            "Housekeeping": 3,
+            "Day Off": 0
+          },
+          "prefHits": 0,
+          "prefMisses": 0,
+          "doubleShifts": 0,
+          "daysOff": []
+        },
+        "id_mrae0etq_bkdbcj6": {
+          "id": "id_mrae0etq_bkdbcj6",
+          "name": "Manon",
+          "earnings": 1447.6000000000001,
+          "hoursWorked": 40,
+          "satShifts": 1,
+          "sunShifts": 1,
+          "weekendOff": 0,
+          "weekdayOff": 2,
+          "roleCounts": {
+            "Kitchen Morning": 2,
+            "Shop Morning": 1,
+            "Kitchen Night": 0,
+            "Shop Night": 1,
+            "Float": 0,
+            "Housekeeping": 1,
+            "Day Off": 2
+          },
+          "prefHits": 0,
+          "prefMisses": 0,
+          "doubleShifts": 0,
+          "daysOff": [
+            "Wed",
+            "Thu"
+          ]
+        },
+        "id_mrae4on6_2ogvrmg": {
+          "id": "id_mrae4on6_2ogvrmg",
+          "name": "Delfi",
+          "earnings": 1602.64,
+          "hoursWorked": 48,
+          "satShifts": 1,
+          "sunShifts": 0,
+          "weekendOff": 1,
+          "weekdayOff": 0,
+          "roleCounts": {
+            "Kitchen Morning": 0,
+            "Shop Morning": 2,
+            "Kitchen Night": 1,
+            "Shop Night": 2,
+            "Float": 0,
+            "Housekeeping": 1,
+            "Day Off": 1
+          },
+          "prefHits": 0,
+          "prefMisses": 0,
+          "doubleShifts": 0,
+          "daysOff": [
+            "Sun"
+          ]
+        },
+        "id_mrae6409_kgdvq7x": {
+          "id": "id_mrae6409_kgdvq7x",
+          "name": "Thomi",
+          "earnings": 1706.0800000000002,
+          "hoursWorked": 48,
+          "satShifts": 1,
+          "sunShifts": 1,
+          "weekendOff": 0,
+          "weekdayOff": 1,
+          "roleCounts": {
+            "Kitchen Morning": 0,
+            "Shop Morning": 1,
+            "Kitchen Night": 0,
+            "Shop Night": 3,
+            "Float": 0,
+            "Housekeeping": 2,
+            "Day Off": 1
+          },
+          "prefHits": 0,
+          "prefMisses": 0,
+          "doubleShifts": 0,
+          "daysOff": [
+            "Fri"
+          ]
+        }
+      },
+      "qualityScore": 81.1,
+      "cost": 2214777.5606991756
+    },
+    {
+      "id": "id_mraedb3y_t6rojt8",
+      "createdAt": 1783413565046,
+      "weekStartDate": "2026-06-24",
+      "schedule": {
+        "Wed": {
+          "Kitchen Morning": [
+            "id_mradzjiw_kebthla"
+          ],
+          "Shop Morning": [
+            "id_mrae04pu_vnczpyj"
+          ],
+          "Kitchen Night": [
+            "id_mradzydl_62w3ia7"
+          ],
+          "Shop Night": [
+            "id_mrae4on6_2ogvrmg"
+          ],
+          "Housekeeping": [
+            "id_mrae0etq_bkdbcj6"
+          ]
+        },
+        "Thu": {
+          "Kitchen Morning": [
+            "id_mrae0etq_bkdbcj6"
+          ],
+          "Shop Morning": [
+            "id_mrae04pu_vnczpyj"
+          ],
+          "Kitchen Night": [
+            "id_mradzydl_62w3ia7"
+          ],
+          "Shop Night": [
+            "id_mrae4gee_3wxky00"
+          ],
+          "Housekeeping": [
+            "id_mrae6409_kgdvq7x"
+          ]
+        },
+        "Fri": {
+          "Kitchen Morning": [
+            "id_mradzydl_62w3ia7"
+          ],
+          "Shop Morning": [
+            "id_mrae04pu_vnczpyj"
+          ],
+          "Kitchen Night": [
+            "id_mradzjiw_kebthla"
+          ],
+          "Shop Night": [
+            "id_mrae4gee_3wxky00"
+          ],
+          "Housekeeping": [
+            "id_mrae4on6_2ogvrmg"
+          ],
+          "Float": [
+            "id_mrae6409_kgdvq7x"
+          ]
+        },
+        "Sat": {
+          "Kitchen Morning": [
+            "id_mradzydl_62w3ia7"
+          ],
+          "Shop Morning": [
+            "id_mrae4on6_2ogvrmg"
+          ],
+          "Kitchen Night": [
+            "id_mradzjiw_kebthla"
+          ],
+          "Shop Night": [
+            "id_mrae4gee_3wxky00"
+          ],
+          "Housekeeping": [
+            "id_mrae0etq_bkdbcj6"
+          ]
+        },
+        "Sun": {
+          "Kitchen Morning": [
+            "id_mrae0etq_bkdbcj6"
+          ],
+          "Shop Morning": [
+            "id_mrae6409_kgdvq7x"
+          ],
+          "Kitchen Night": [
+            "id_mradzjiw_kebthla"
+          ],
+          "Shop Night": [
+            "id_mrae4on6_2ogvrmg"
+          ],
+          "Housekeeping": [
+            "id_mrae4gee_3wxky00"
+          ]
+        },
+        "Mon": {
+          "Kitchen Morning": [
+            "id_mradzjiw_kebthla"
+          ],
+          "Shop Morning": [
+            "id_mrae0etq_bkdbcj6"
+          ],
+          "Kitchen Night": [
+            "id_mrae4on6_2ogvrmg"
+          ],
+          "Shop Night": [
+            "id_mrae6409_kgdvq7x"
+          ],
+          "Housekeeping": [
+            "id_mrae04pu_vnczpyj"
+          ]
+        },
+        "Tue": {
+          "Kitchen Morning": [
+            "id_mrae0etq_bkdbcj6"
+          ],
+          "Shop Morning": [
+            "id_mrae04pu_vnczpyj"
+          ],
+          "Kitchen Night": [
+            "id_mradzydl_62w3ia7"
+          ],
+          "Shop Night": [
+            "id_mrae6409_kgdvq7x"
+          ],
+          "Housekeeping": [
+            "id_mrae4on6_2ogvrmg"
+          ]
+        }
+      },
+      "employeeDay": {
+        "id_mradzjiw_kebthla": {
+          "Wed": [
+            "Kitchen Morning"
+          ],
+          "Thu": [
+            "Day Off"
+          ],
+          "Fri": [
+            "Kitchen Night"
+          ],
+          "Sat": [
+            "Kitchen Night"
+          ],
+          "Sun": [
+            "Kitchen Night"
+          ],
+          "Mon": [
+            "Kitchen Morning"
+          ],
+          "Tue": [
+            "Day Off"
+          ]
+        },
+        "id_mradzydl_62w3ia7": {
+          "Wed": [
+            "Kitchen Night"
+          ],
+          "Thu": [
+            "Kitchen Night"
+          ],
+          "Fri": [
+            "Kitchen Morning"
+          ],
+          "Sat": [
+            "Kitchen Morning"
+          ],
+          "Sun": [
+            "Day Off"
+          ],
+          "Mon": [
+            "Day Off"
+          ],
+          "Tue": [
+            "Kitchen Night"
+          ]
+        },
+        "id_mrae04pu_vnczpyj": {
+          "Wed": [
+            "Shop Morning"
+          ],
+          "Thu": [
+            "Shop Morning"
+          ],
+          "Fri": [
+            "Shop Morning"
+          ],
+          "Sat": [
+            "Day Off"
+          ],
+          "Sun": [
+            "Day Off"
+          ],
+          "Mon": [
+            "Housekeeping"
+          ],
+          "Tue": [
+            "Shop Morning"
+          ]
+        },
+        "id_mrae0etq_bkdbcj6": {
+          "Wed": [
+            "Housekeeping"
+          ],
+          "Thu": [
+            "Kitchen Morning"
+          ],
+          "Fri": [
+            "Day Off"
+          ],
+          "Sat": [
+            "Housekeeping"
+          ],
+          "Sun": [
+            "Kitchen Morning"
+          ],
+          "Mon": [
+            "Shop Morning"
+          ],
+          "Tue": [
+            "Kitchen Morning"
+          ]
+        },
+        "id_mrae4gee_3wxky00": {
+          "Wed": [
+            "Day Off"
+          ],
+          "Thu": [
+            "Shop Night"
+          ],
+          "Fri": [
+            "Shop Night"
+          ],
+          "Sat": [
+            "Shop Night"
+          ],
+          "Sun": [
+            "Housekeeping"
+          ],
+          "Mon": [
+            "Day Off"
+          ],
+          "Tue": [
+            "Day Off"
+          ]
+        },
+        "id_mrae4on6_2ogvrmg": {
+          "Wed": [
+            "Shop Night"
+          ],
+          "Thu": [
+            "Day Off"
+          ],
+          "Fri": [
+            "Housekeeping"
+          ],
+          "Sat": [
+            "Shop Morning"
+          ],
+          "Sun": [
+            "Shop Night"
+          ],
+          "Mon": [
+            "Kitchen Night"
+          ],
+          "Tue": [
+            "Housekeeping"
+          ]
+        },
+        "id_mrae6409_kgdvq7x": {
+          "Wed": [
+            "Day Off"
+          ],
+          "Thu": [
+            "Housekeeping"
+          ],
+          "Fri": [
+            "Float"
+          ],
+          "Sat": [
+            "Day Off"
+          ],
+          "Sun": [
+            "Shop Morning"
+          ],
+          "Mon": [
+            "Shop Night"
+          ],
+          "Tue": [
+            "Shop Night"
+          ]
+        }
+      },
+      "floatCounts": {
+        "Wed": 0,
+        "Thu": 0,
+        "Fri": 1,
+        "Sat": 0,
+        "Sun": 0,
+        "Mon": 0,
+        "Tue": 0
+      },
+      "warnings": [],
+      "perEmployee": {
+        "id_mradzjiw_kebthla": {
+          "id": "id_mradzjiw_kebthla",
+          "name": "Ann",
+          "earnings": 1447.6000000000001,
+          "hoursWorked": 40,
+          "satShifts": 1,
+          "sunShifts": 1,
+          "weekendOff": 0,
+          "weekdayOff": 2,
+          "roleCounts": {
+            "Kitchen Morning": 2,
+            "Shop Morning": 0,
+            "Kitchen Night": 3,
+            "Shop Night": 0,
+            "Float": 0,
+            "Housekeeping": 0,
+            "Day Off": 2
+          },
+          "prefHits": 0,
+          "prefMisses": 0,
+          "doubleShifts": 0,
+          "daysOff": [
+            "Thu",
+            "Tue"
+          ]
+        },
+        "id_mradzydl_62w3ia7": {
+          "id": "id_mradzydl_62w3ia7",
+          "name": "Harry",
+          "earnings": 1344.16,
+          "hoursWorked": 40,
+          "satShifts": 1,
+          "sunShifts": 0,
+          "weekendOff": 1,
+          "weekdayOff": 1,
+          "roleCounts": {
+            "Kitchen Morning": 2,
+            "Shop Morning": 0,
+            "Kitchen Night": 3,
+            "Shop Night": 0,
+            "Float": 0,
+            "Housekeeping": 0,
+            "Day Off": 2
+          },
+          "prefHits": 0,
+          "prefMisses": 0,
+          "doubleShifts": 0,
+          "daysOff": [
+            "Sun",
+            "Mon"
+          ]
+        },
+        "id_mrae04pu_vnczpyj": {
+          "id": "id_mrae04pu_vnczpyj",
+          "name": "Izzy",
+          "earnings": 1292.4,
+          "hoursWorked": 40,
+          "satShifts": 0,
+          "sunShifts": 0,
+          "weekendOff": 2,
+          "weekdayOff": 0,
+          "roleCounts": {
+            "Kitchen Morning": 0,
+            "Shop Morning": 4,
+            "Kitchen Night": 0,
+            "Shop Night": 0,
+            "Float": 0,
+            "Housekeeping": 1,
+            "Day Off": 2
+          },
+          "prefHits": 0,
+          "prefMisses": 0,
+          "doubleShifts": 0,
+          "daysOff": [
+            "Sat",
+            "Sun"
+          ]
+        },
+        "id_mrae0etq_bkdbcj6": {
+          "id": "id_mrae0etq_bkdbcj6",
+          "name": "Manon",
+          "earnings": 1706.0800000000002,
+          "hoursWorked": 48,
+          "satShifts": 1,
+          "sunShifts": 1,
+          "weekendOff": 0,
+          "weekdayOff": 1,
+          "roleCounts": {
+            "Kitchen Morning": 3,
+            "Shop Morning": 1,
+            "Kitchen Night": 0,
+            "Shop Night": 0,
+            "Float": 0,
+            "Housekeeping": 2,
+            "Day Off": 1
+          },
+          "prefHits": 0,
+          "prefMisses": 0,
+          "doubleShifts": 0,
+          "daysOff": [
+            "Fri"
+          ]
+        },
+        "id_mrae4gee_3wxky00": {
+          "id": "id_mrae4gee_3wxky00",
+          "name": "Oceane",
+          "earnings": 1189.1200000000001,
+          "hoursWorked": 32,
+          "satShifts": 1,
+          "sunShifts": 1,
+          "weekendOff": 0,
+          "weekdayOff": 3,
+          "roleCounts": {
+            "Kitchen Morning": 0,
+            "Shop Morning": 0,
+            "Kitchen Night": 0,
+            "Shop Night": 3,
+            "Float": 0,
+            "Housekeeping": 1,
+            "Day Off": 3
+          },
+          "prefHits": 0,
+          "prefMisses": 0,
+          "doubleShifts": 0,
+          "daysOff": [
+            "Wed",
+            "Mon",
+            "Tue"
+          ]
+        },
+        "id_mrae4on6_2ogvrmg": {
+          "id": "id_mrae4on6_2ogvrmg",
+          "name": "Delfi",
+          "earnings": 1706.0800000000002,
+          "hoursWorked": 48,
+          "satShifts": 1,
+          "sunShifts": 1,
+          "weekendOff": 0,
+          "weekdayOff": 1,
+          "roleCounts": {
+            "Kitchen Morning": 0,
+            "Shop Morning": 1,
+            "Kitchen Night": 1,
+            "Shop Night": 2,
+            "Float": 0,
+            "Housekeeping": 2,
+            "Day Off": 1
+          },
+          "prefHits": 0,
+          "prefMisses": 0,
+          "doubleShifts": 0,
+          "daysOff": [
+            "Thu"
+          ]
+        },
+        "id_mrae6409_kgdvq7x": {
+          "id": "id_mrae6409_kgdvq7x",
+          "name": "Thomi",
+          "earnings": 1395.8400000000001,
+          "hoursWorked": 40,
+          "satShifts": 0,
+          "sunShifts": 1,
+          "weekendOff": 1,
+          "weekdayOff": 1,
+          "roleCounts": {
+            "Kitchen Morning": 0,
+            "Shop Morning": 1,
+            "Kitchen Night": 0,
+            "Shop Night": 2,
+            "Float": 1,
+            "Housekeeping": 1,
+            "Day Off": 2
+          },
+          "prefHits": 0,
+          "prefMisses": 0,
+          "doubleShifts": 0,
+          "daysOff": [
+            "Wed",
+            "Sat"
+          ]
+        }
+      },
+      "qualityScore": 78.2,
+      "cost": 1143986.0855856594
+    }
+  ],
+  "settings": [
+    {
+      "key": "currentWeekStart",
+      "value": "2026-07-15"
+    }
+  ]
+}
