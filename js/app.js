@@ -83,7 +83,19 @@ const App = (() => {
   // ---------------- Init ----------------
   async function init() {
     if ('serviceWorker' in navigator) {
-      try { await navigator.serviceWorker.register('sw.js'); } catch (e) { console.warn('SW failed', e); }
+      try {
+        await navigator.serviceWorker.register('sw.js');
+        // When a newer app version activates (e.g. after updating files on
+        // GitHub Pages), automatically reload once to pick it up — instead
+        // of silently keeping old cached files until someone manually clears
+        // the cache or unregisters the service worker.
+        let reloaded = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (reloaded) return;
+          reloaded = true;
+          window.location.reload();
+        });
+      } catch (e) { console.warn('SW failed', e); }
     }
 
     state.employees = await DB.getAllEmployees();
