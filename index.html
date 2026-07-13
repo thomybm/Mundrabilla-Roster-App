@@ -76,17 +76,8 @@
       </div>
     </section>
 
-    <!-- PRINT-ONLY POSTER VIEW (hidden on screen, shown only when printing) -->
-    <div id="printPoster" class="print-only">
-      <div class="print-header">
-        <img src="icons/logo.png" alt="Mundrabilla Roadhouse" class="print-logo">
-        <div>
-          <h1 id="printTitle">Weekly Roster</h1>
-          <p id="printWeekLabel"></p>
-        </div>
-      </div>
-      <table id="printTable" class="print-table"></table>
-    </div>
+    <!-- Printing reuses the #rosterTable above directly via @media print
+         CSS (see style.css) — no separate print-only markup needed. -->
 
     <!-- EMPLOYEES -->
     <section id="tab-employees" class="tab-panel">
