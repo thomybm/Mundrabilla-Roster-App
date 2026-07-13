@@ -484,7 +484,6 @@ const UI = (() => {
       return;
     }
     const ids = Object.keys(roster.perEmployee);
-    const names = ids.map(id => roster.perEmployee[id].name);
     const earnings = ids.map(id => roster.perEmployee[id].earnings);
     const hours = ids.map(id => roster.perEmployee[id].hoursWorked || 0);
     const sat = ids.map(id => roster.perEmployee[id].satShifts);
@@ -498,50 +497,87 @@ const UI = (() => {
     Models.ROLES.forEach(r => { roleTotals[r] = ids.reduce((a, id) => a + (roster.perEmployee[id].roleCounts[r] || 0), 0); });
     const maxRole = Math.max(1, ...Object.values(roleTotals));
 
+    // Builds a chart's rows sorted with the highest value first, so people
+    // can compare at a glance without hunting for who has the most/least.
+    function chartRows(valueFn, formatFn, max) {
+      return [...ids]
+        .sort((a, b) => valueFn(b) - valueFn(a))
+        .map(id => barRow(roster.perEmployee[id].name, valueFn(id), max, formatFn(id)))
+        .join('');
+    }
+
     container.innerHTML = `
-      <div class="stat-card quality-score-ring">
+      <div class="stat-card quality-score-card">
         <h4>Roster Quality Score</h4>
-        <div class="stat-big" style="color:${roster.qualityScore >= 75 ? '#16a34a' : roster.qualityScore >= 50 ? '#f59e0b' : '#dc2626'}">${roster.qualityScore}</div>
-        <div class="muted">out of 100</div>
+        ${qualityGauge(roster.qualityScore)}
       </div>
 
       <div class="stat-card">
         <h4>Hours Worked This Week</h4>
-        ${ids.map((id, i) => barRow(names[i], hours[i], maxHours, hours[i] + 'h')).join('')}
+        ${chartRows(id => roster.perEmployee[id].hoursWorked || 0, id => (roster.perEmployee[id].hoursWorked || 0) + 'h', maxHours)}
       </div>
 
       <div class="stat-card">
         <h4>Earnings Balance</h4>
-        ${ids.map((id, i) => barRow(names[i], earnings[i], maxEarn, '$' + earnings[i].toFixed(2))).join('')}
+        ${chartRows(id => roster.perEmployee[id].earnings, id => '$' + roster.perEmployee[id].earnings.toFixed(2), maxEarn)}
       </div>
 
       <div class="stat-card">
         <h4>Saturday Shifts</h4>
-        ${ids.map((id, i) => barRow(names[i], sat[i], maxSat, sat[i])).join('')}
+        ${chartRows(id => roster.perEmployee[id].satShifts, id => roster.perEmployee[id].satShifts, maxSat)}
       </div>
 
       <div class="stat-card">
         <h4>Sunday Shifts</h4>
-        ${ids.map((id, i) => barRow(names[i], sun[i], maxSun, sun[i])).join('')}
+        ${chartRows(id => roster.perEmployee[id].sunShifts, id => roster.perEmployee[id].sunShifts, maxSun)}
       </div>
 
       <div class="stat-card" style="grid-column: 1 / -1;">
         <h4>Role Distribution (roadhouse-wide)</h4>
-        ${Models.ROLES.map(r => barRow(r, roleTotals[r], maxRole, roleTotals[r])).join('')}
+        ${[...Models.ROLES].sort((a, b) => roleTotals[b] - roleTotals[a]).map(r => barRow(r, roleTotals[r], maxRole, roleTotals[r])).join('')}
       </div>
 
       <div class="stat-card" style="grid-column: 1 / -1;">
         <h4>Preference Satisfaction</h4>
-        ${ids.map(id => {
-          const st = roster.perEmployee[id];
-          const total = st.prefHits + st.prefMisses;
-          const pct = total > 0 ? Math.round((st.prefHits / total) * 100) : 100;
-          return barRow(st.name, pct, 100, pct + '%');
-        }).join('')}
+        ${chartRows(
+          id => {
+            const st = roster.perEmployee[id];
+            const total = st.prefHits + st.prefMisses;
+            return total > 0 ? Math.round((st.prefHits / total) * 100) : 100;
+          },
+          id => {
+            const st = roster.perEmployee[id];
+            const total = st.prefHits + st.prefMisses;
+            const pct = total > 0 ? Math.round((st.prefHits / total) * 100) : 100;
+            return pct + '%';
+          },
+          100
+        )}
       </div>
 
       ${renderHistoricalOverview(historyRosters)}
     `;
+  }
+
+  // Renders the Roster Quality Score as an SVG radial gauge instead of a
+  // flat number, colored by the same thresholds as before.
+  function qualityGauge(score) {
+    const pct = Math.max(0, Math.min(100, score));
+    const color = pct >= 75 ? '#58613a' : pct >= 50 ? '#af8967' : '#dc2626';
+    const radius = 54;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference * (1 - pct / 100);
+    return `
+      <div class="gauge-wrap">
+        <svg viewBox="0 0 130 130" class="gauge-svg">
+          <circle cx="65" cy="65" r="${radius}" fill="none" stroke="#f2ece2" stroke-width="14"/>
+          <circle cx="65" cy="65" r="${radius}" fill="none" stroke="${color}" stroke-width="14"
+            stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
+            transform="rotate(-90 65 65)"/>
+          <text x="65" y="60" text-anchor="middle" font-size="30" font-weight="800" fill="${color}" font-family="var(--font-body), sans-serif">${Math.round(pct)}</text>
+          <text x="65" y="80" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--font-body), sans-serif">out of 100</text>
+        </svg>
+      </div>`;
   }
 
   function renderHistoricalOverview(historyRosters) {

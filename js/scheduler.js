@@ -244,13 +244,14 @@ const Scheduler = (() => {
     const daysOffCountArr = ids.map(id => stats[id].weekendOff + stats[id].weekdayOff);
     const daysOffCountCV = coefVar(daysOffCountArr);
 
-    // Weekend (Sat+Sun combined) shift distribution, and a normalized comparison
-    // between "hours worked per week" and "weekend shift distribution" so neither
-    // dominates the other just because it happens to be on a larger numeric scale.
-    const weekendArr = ids.map(id => stats[id].satShifts + stats[id].sunShifts);
-    const weekendVar = variance(weekendArr);
     const hoursCV = coefVar(hoursArr);
-    const weekendCV = coefVar(weekendArr);
+    // Saturday and Sunday are balanced SEPARATELY as main-tier priorities —
+    // not combined — because they pay different rates (Sunday > Saturday >
+    // weekday). Someone with 2 Sundays and 0 Saturdays vs. someone with 0
+    // Sundays and 2 Saturdays would look "balanced" if only the combined
+    // weekend total were considered, while actually being unequal in pay.
+    const satCV = coefVar(satArr);
+    const sunCV = coefVar(sunArr);
 
     // Saturday and Sunday rotate independently on purpose — don't let the
     // optimizer bundle both weekend days off onto the same person in the
@@ -302,22 +303,20 @@ const Scheduler = (() => {
     });
 
     // Weighted cost: lower is better. Tiers separated by orders of magnitude.
-    // "hoursCV * BALANCE_WEIGHT" and "weekendCV * BALANCE_WEIGHT" share the exact
-    // same weight on purpose: hours-worked-per-week and weekend (Sat+Sun) shift
-    // distribution are treated as equally important, per explicit request — rather
-    // than one silently overpowering the other. Sat/Sun still get a small separate
-    // nudge below so that, all else equal, each is individually spread out too.
+    // hoursCV, satCV, sunCV, and daysOffCountCV all share the exact same
+    // weight on purpose: hours worked, Saturday shifts, Sunday shifts, and
+    // days-off count are all treated as equally important, main-tier fairness
+    // targets — none silently overpowering the others.
     const BALANCE_WEIGHT = 4000;
     const cost =
       unfilled * 1e9 +
       doubleShifts * 1e4 +
       hoursCV * BALANCE_WEIGHT +
-      weekendCV * BALANCE_WEIGHT +
+      satCV * BALANCE_WEIGHT +
+      sunCV * BALANCE_WEIGHT +
       daysOffCountCV * BALANCE_WEIGHT +
       bothWeekendDaysOffCount * 2500 +
       earningsVar * 50 +
-      satVar * 300 +
-      sunVar * 300 +
       offVar * 300 +
       totalWeekendOff * 20 +
       roleVarSum * 50 -
@@ -330,7 +329,7 @@ const Scheduler = (() => {
       cost,
       breakdown: {
         unfilled, doubleShifts, earningsVar, hoursVar, hoursCV,
-        satVar, sunVar, weekendVar, weekendCV, offVar, daysOffCountCV, bothWeekendDaysOffCount,
+        satCV, sunCV, offVar, daysOffCountCV, bothWeekendDaysOffCount,
         roleVarSum, prefHits, prefMisses, consecutiveBonus, restBonus
       }
     };

@@ -187,14 +187,20 @@ table.roster-table td.role-label { font-weight: 700; white-space: nowrap; }
 .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
 .empty-state { grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--muted); background: var(--surface); border-radius: var(--radius); }
 .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
-.stat-card h4 { margin: 0 0 10px 0; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+.stat-card h4 { margin: 0 0 12px 0; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-family: var(--font-body); }
 .stat-big { font-size: 32px; font-weight: 800; }
-.bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; }
-.bar-row .label { width: 110px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bar-track { flex: 1; height: 10px; background: #f2ece2; border-radius: 6px; overflow: hidden; }
-.bar-fill { height: 100%; background: var(--primary); }
-.bar-value { width: 60px; text-align: right; flex-shrink: 0; }
-.quality-score-ring { display: flex; align-items: center; justify-content: center; flex-direction: column; }
+.bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; font-size: 12.5px; }
+.bar-row .label { width: 100px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; color: var(--text); }
+.bar-track { flex: 1; height: 12px; background: #f2ece2; border-radius: 999px; overflow: hidden; }
+.bar-fill {
+  height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+  transition: width 0.4s ease;
+}
+.bar-value { width: 62px; text-align: right; flex-shrink: 0; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+.quality-score-card { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.gauge-wrap { width: 150px; margin: 4px auto 0; }
+.gauge-svg { width: 100%; height: auto; display: block; }
 
 /* ---------- History ---------- */
 .history-list { display: flex; flex-direction: column; gap: 10px; }
