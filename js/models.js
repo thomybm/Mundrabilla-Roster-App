@@ -70,10 +70,18 @@ function newId() {
   return 'id_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
 }
 
+// Central pay-rate lookup. Public holidays (exact dates with their own
+// hourly rate) override the regular weekday rate. holidays is
+// { 'YYYY-MM-DD': rateNumber, ... } and may be empty/undefined.
+function rateForDate(rates, holidays, dayName, dateStr) {
+  if (holidays && dateStr && holidays[dateStr] != null) return holidays[dateStr];
+  return rates[dayName] || 0;
+}
+
 // eslint-disable-next-line no-unused-vars
 const Models = {
   ROLES, WORK_ROLES, FLOAT_SUPPORTS, WEEK_DAYS, WEEKEND_DAYS,
   DEFAULT_RATES, SHIFT_HOURS,
   isMorningRole, isNightRole, roleFamily,
-  emptyEmployee, newId
+  emptyEmployee, newId, rateForDate
 };

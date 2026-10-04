@@ -87,6 +87,8 @@ main { padding: 20px; max-width: 1400px; margin: 0 auto; }
 
 .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .roster-toolbar { margin-bottom: 14px; }
+.locked-btn { background: var(--accent) !important; color: white !important; border-color: var(--accent) !important; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 button.btn-primary, button.btn-secondary, button.btn-danger {
   border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 600;
@@ -139,6 +141,10 @@ table.roster-table td.role-label { font-weight: 700; white-space: nowrap; }
 }
 .warnings-box ul { margin: 4px 0 0 18px; padding: 0; }
 
+.notes-row { background: #fdf9f2; }
+.day-note-input { width: 100%; border: 1px dashed var(--border); background: transparent; font-size: 12px; padding: 4px 6px; border-radius: 6px; }
+.day-note-input:focus { border-style: solid; outline: none; border-color: var(--primary); background: white; }
+
 /* ---------- Employees ---------- */
 .employee-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
 .employee-card {
@@ -147,6 +153,10 @@ table.roster-table td.role-label { font-weight: 700; white-space: nowrap; }
 }
 .employee-card:hover { border-color: var(--primary); }
 .employee-card h4 { margin: 0 0 6px 0; display: flex; justify-content: space-between; align-items: center; }
+.my-week-btn { font-size: 11px; padding: 4px 8px !important; }
+.my-week-table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.my-week-table th, .my-week-table td { padding: 7px 8px; border-bottom: 1px solid var(--border); text-align: left; }
+.my-week-table tfoot td { border-top: 2px solid var(--primary); border-bottom: none; }
 .status-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 6px; }
 .status-active { background: var(--success); }
 .status-inactive { background: #c9c0b0; }
@@ -182,6 +192,12 @@ table.roster-table td.role-label { font-weight: 700; white-space: nowrap; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
 .rates-form label, .float-form label { display: block; font-size: 13px; font-weight: 600; margin: 8px 0 2px; }
 .rates-form input, .float-form input { width: 100%; }
+.holiday-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.holiday-row .holiday-date { font-weight: 600; }
+.holiday-row .holiday-rate { color: var(--muted); flex: 1; }
+.holiday-row .remove-x { color: var(--danger); cursor: pointer; font-weight: 700; }
+.holiday-add-row { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.holiday-add-row input[type="number"] { width: 110px; }
 
 /* ---------- Dashboard ---------- */
 .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
@@ -250,4 +266,5 @@ table.roster-table td.role-label { font-weight: 700; white-space: nowrap; }
 
   .cell-slot { background: transparent !important; outline: none !important; cursor: default; }
   .cell-slot .remove-x, .add-float-btn { display: none !important; }
+  .day-note-input { border: none !important; background: transparent !important; font-size: 10px; padding: 0; }
 }

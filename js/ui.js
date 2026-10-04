@@ -36,6 +36,8 @@ const UI = (() => {
     });
 
     document.getElementById('btnPrintPoster').addEventListener('click', () => H.onPrintPoster());
+    document.getElementById('btnToggleLock').addEventListener('click', () => H.onToggleLock());
+    document.getElementById('btnUndo').addEventListener('click', () => H.onUndo());
 
     document.getElementById('btnCancelEmployee').addEventListener('click', closeEmployeeModal);
     document.getElementById('btnSaveEmployee').addEventListener('click', () => {
@@ -170,6 +172,25 @@ const UI = (() => {
       body.appendChild(tr);
     });
 
+    // Notes row: one free-text note per day (e.g. "tour bus 2pm", "public
+    // holiday"), stored with the roster and shown on the printed poster.
+    const notesTr = document.createElement('tr');
+    notesTr.className = 'notes-row';
+    const notesLabel = document.createElement('td');
+    notesLabel.className = 'role-label';
+    notesLabel.textContent = 'Notes';
+    notesTr.appendChild(notesLabel);
+    Models.WEEK_DAYS.forEach(day => {
+      const td = document.createElement('td');
+      const note = (roster.dayNotes && roster.dayNotes[day]) || '';
+      td.innerHTML = `<input type="text" class="day-note-input" data-day="${day}" value="${esc(note)}" placeholder="—">`;
+      notesTr.appendChild(td);
+    });
+    body.appendChild(notesTr);
+    body.querySelectorAll('.day-note-input').forEach(el => {
+      el.addEventListener('change', () => H.onDayNoteChange(el.dataset.day, el.value));
+    });
+
     // wire up click handlers
     body.querySelectorAll('.cell-slot').forEach(el => {
       el.addEventListener('click', (e) => {
@@ -210,7 +231,7 @@ const UI = (() => {
     }
     container.innerHTML = employees.map(e => `
       <div class="employee-card" data-id="${e.id}">
-        <h4><span><span class="status-dot ${e.active ? 'status-active' : 'status-inactive'}"></span>${esc(e.name)}</span></h4>
+        <h4><span><span class="status-dot ${e.active ? 'status-active' : 'status-inactive'}"></span>${esc(e.name)}</span><button class="btn-secondary my-week-btn" data-id="${e.id}">My Week</button></h4>
         <div class="muted">Pref: ${esc(e.shiftPreference || 'None')}</div>
         <div class="tag-row">
           ${e.qualifiedRoles.map(r => `<span class="tag">${esc(r)}</span>`).join('')}
@@ -223,6 +244,12 @@ const UI = (() => {
     `).join('');
     container.querySelectorAll('.employee-card').forEach(card => {
       card.addEventListener('click', () => H.onEditEmployee(card.dataset.id));
+    });
+    container.querySelectorAll('.my-week-btn').forEach(btn => {
+      btn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        H.onShowMyWeek(btn.dataset.id);
+      });
     });
   }
 
@@ -436,6 +463,45 @@ const UI = (() => {
       const newCounts = {};
       Models.WEEK_DAYS.forEach(d => { newCounts[d] = parseInt(document.getElementById(`deffloat_${d}`).value, 10) || 0; });
       H.onDefaultFloatChange(newCounts);
+    });
+  }
+
+  function renderHolidaysForm(holidays) {
+    const container = document.getElementById('holidaysForm');
+    if (!container) return;
+    const entries = Object.entries(holidays || {}).sort((a, b) => a[0].localeCompare(b[0]));
+    const listHtml = entries.length === 0
+      ? '<p class="muted">No public holidays configured.</p>'
+      : entries.map(([date, rate]) => `
+          <div class="holiday-row">
+            <span class="holiday-date">${esc(date)}</span>
+            <span class="holiday-rate">$${Number(rate).toFixed(2)}/h</span>
+            <span class="remove-x" data-date="${esc(date)}" title="Remove">✕</span>
+          </div>`).join('');
+
+    container.innerHTML = `
+      ${listHtml}
+      <div class="holiday-add-row">
+        <input type="date" id="holidayDate">
+        <input type="number" step="0.01" min="0" id="holidayRate" placeholder="Hourly rate">
+        <button class="btn-primary" id="btnAddHoliday">Add</button>
+      </div>`;
+
+    container.querySelectorAll('.remove-x').forEach(el => {
+      el.addEventListener('click', () => {
+        const updated = Object.assign({}, holidays);
+        delete updated[el.dataset.date];
+        H.onHolidaysChange(updated);
+      });
+    });
+    document.getElementById('btnAddHoliday').addEventListener('click', () => {
+      const date = document.getElementById('holidayDate').value;
+      const rate = parseFloat(document.getElementById('holidayRate').value);
+      if (!date) { alert('Choose a date.'); return; }
+      if (!(rate > 0)) { alert('Enter a valid hourly rate.'); return; }
+      const updated = Object.assign({}, holidays);
+      updated[date] = rate;
+      H.onHolidaysChange(updated);
     });
   }
 
@@ -673,12 +739,65 @@ const UI = (() => {
     });
   }
 
+  function openMyWeekModal(emp, roster, rates, holidays) {
+    document.getElementById('assignModalTitle').textContent = `${emp.name} \u2014 This Week`;
+    const body = document.getElementById('assignModalBody');
+    if (!roster) {
+      body.innerHTML = '<p class="muted">No roster generated for the selected week yet.</p>';
+      document.getElementById('assignModal').style.display = 'flex';
+      return;
+    }
+    let totalHours = 0, totalPay = 0;
+    const rows = Models.WEEK_DAYS.map((day, idx) => {
+      const roles = (roster.employeeDay[emp.id] && roster.employeeDay[emp.id][day]) || ['Day Off'];
+      const isOff = roles.length === 1 && roles[0] === 'Day Off';
+      let dayPay = 0;
+      if (!isOff) {
+        const d0 = new Date(roster.weekStartDate + 'T00:00:00');
+        d0.setDate(d0.getDate() + idx);
+        const dateStr = `${d0.getFullYear()}-${String(d0.getMonth()+1).padStart(2,'0')}-${String(d0.getDate()).padStart(2,'0')}`;
+        const rate = Models.rateForDate(rates, holidays, day, dateStr);
+        roles.forEach(() => { dayPay += rate * Models.SHIFT_HOURS; totalHours += Models.SHIFT_HOURS; });
+        totalPay += dayPay;
+      }
+      return `<tr>
+        <td style="font-weight:600;">${day}</td>
+        <td>${isOff ? '<span class="muted">Day Off</span>' : esc(roles.join(' + '))}</td>
+        <td style="text-align:right;">${isOff ? '' : '$' + dayPay.toFixed(2)}</td>
+      </tr>`;
+    }).join('');
+    body.innerHTML = `
+      <table class="my-week-table">
+        <thead><tr><th>Day</th><th>Assignment</th><th style="text-align:right;">Est. Pay</th></tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot><tr>
+          <td style="font-weight:700;">Total</td>
+          <td style="font-weight:700;">${totalHours}h</td>
+          <td style="text-align:right;font-weight:700;">$${totalPay.toFixed(2)}</td>
+        </tr></tfoot>
+      </table>`;
+    document.getElementById('assignModal').style.display = 'flex';
+  }
+
+  function setLockState(locked) {
+    const btn = document.getElementById('btnToggleLock');
+    if (!btn) return;
+    btn.textContent = locked ? '\ud83d\udd12 Locked (click to unlock)' : '\ud83d\udd13 Lock Roster';
+    btn.classList.toggle('locked-btn', locked);
+  }
+
+  function setUndoEnabled(enabled) {
+    const btn = document.getElementById('btnUndo');
+    if (!btn) return;
+    btn.disabled = !enabled;
+  }
+
   return {
-    init, showTab,
-    renderWeekLabel, renderRosterTable, renderEmployeeList, renderRatesForm, renderFloatForm,
+    init, showTab, setLockState, setUndoEnabled,
+    renderWeekLabel, renderRosterTable, renderEmployeeList, renderRatesForm, renderFloatForm, renderHolidaysForm,
     renderDashboard, renderHistory,
     openEmployeeModal, closeEmployeeModal,
     openFloatPrompt, closeFloatPrompt,
-    openAssignModal, closeAssignModal
+    openAssignModal, closeAssignModal, openMyWeekModal
   };
 })();

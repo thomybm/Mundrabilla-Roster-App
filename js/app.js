@@ -9,11 +9,13 @@ const App = (() => {
   const state = {
     employees: [],
     rates: Object.assign({}, Models.DEFAULT_RATES),
+    holidays: {}, // { 'YYYY-MM-DD': hourlyRate } public holiday overrides
     defaultFloatCounts: makeZeroFloatCounts(),
     weekStartDate: mostRecentWednesday(new Date()),
     currentRoster: null, // { id, weekStartDate, schedule, employeeDay, floatCounts, warnings, perEmployee, qualityScore, cost }
     historyRosters: [],
-    editingEmployeeId: null
+    editingEmployeeId: null,
+    undoStack: [] // snapshots of currentRoster (JSON strings), most recent last; session-only
   };
 
   function makeZeroFloatCounts() {
@@ -111,6 +113,8 @@ const App = (() => {
 
     const storedRates = await DB.getSetting('rates');
     if (storedRates) state.rates = storedRates;
+    const storedHolidays = await DB.getSetting('holidays');
+    if (storedHolidays) state.holidays = storedHolidays;
     const storedFloat = await DB.getSetting('defaultFloatCounts');
     if (storedFloat) state.defaultFloatCounts = storedFloat;
     const storedWeek = await DB.getSetting('currentWeekStart');
@@ -158,6 +162,10 @@ const App = (() => {
       onGenerateClick: openFloatPrompt,
       onExportClick: exportCurrentRoster,
       onSwapDays: swapDays,
+      onToggleLock: toggleLock,
+      onDayNoteChange: saveDayNote,
+      onShowMyWeek: showMyWeek,
+      onUndo: undoLastEdit,
       onPrintPoster: printPoster,
       onPrevWeek: () => changeWeek(-7),
       onNextWeek: () => changeWeek(7),
@@ -168,6 +176,7 @@ const App = (() => {
       onDeleteEmployee: deleteEmployeeFromModal,
       onRatesChange: saveRates,
       onDefaultFloatChange: saveDefaultFloatCounts,
+      onHolidaysChange: saveHolidays,
       onExportData: exportAllData,
       onImportData: importAllData,
       onFloatPromptConfirm: runGeneration,
@@ -183,9 +192,12 @@ const App = (() => {
   function renderAll() {
     UI.renderWeekLabel(state.weekStartDate);
     UI.renderRosterTable(state.currentRoster, state.employees);
+    UI.setLockState(!!(state.currentRoster && state.currentRoster.locked));
+    UI.setUndoEnabled(state.undoStack.length > 0);
     UI.renderEmployeeList(state.employees);
     UI.renderRatesForm(state.rates);
     UI.renderFloatForm(state.defaultFloatCounts);
+    UI.renderHolidaysForm(state.holidays);
     UI.renderDashboard(state.currentRoster, state.historyRosters);
     UI.renderHistory(state.historyRosters);
   }
@@ -244,6 +256,14 @@ const App = (() => {
     await DB.putSetting('rates', newRates);
     toast('Pay rates updated.');
   }
+  async function saveHolidays(newHolidays) {
+    state.holidays = newHolidays;
+    await DB.putSetting('holidays', newHolidays);
+    if (state.currentRoster) await recalcAndPersist();
+    UI.renderHolidaysForm(state.holidays);
+    toast('Public holidays updated.');
+  }
+
   async function saveDefaultFloatCounts(newCounts) {
     state.defaultFloatCounts = newCounts;
     await DB.putSetting('defaultFloatCounts', newCounts);
@@ -252,6 +272,7 @@ const App = (() => {
 
   // ---------------- Roster generation ----------------
   function openFloatPrompt() {
+    if (blockIfLocked()) return;
     if (state.employees.filter(e => e.active).length === 0) {
       toast('Add at least one active employee first.');
       return;
@@ -365,6 +386,7 @@ const App = (() => {
         employees: state.employees,
         floatCounts,
         rates: state.rates,
+        holidays: state.holidays,
         history: historySeed,
         weekStartDate: state.weekStartDate,
         iterations: 70,
@@ -372,7 +394,7 @@ const App = (() => {
         sunRotation
       });
 
-      const perEmployee = Stats.computeFromEmployeeDay(state.employees.filter(e => e.active), result.employeeDay, state.rates, state.weekStartDate);
+      const perEmployee = Stats.computeFromEmployeeDay(state.employees.filter(e => e.active), result.employeeDay, state.rates, state.weekStartDate, state.holidays);
       const quality = Stats.qualityScore(perEmployee, result.warnings);
 
       // Regenerating an already-generated week replaces that week's single
@@ -386,6 +408,7 @@ const App = (() => {
         schedule: result.schedule,
         employeeDay: result.employeeDay,
         floatCounts,
+        dayNotes: (existingForWeek && existingForWeek.dayNotes) || {},
         warnings: result.warnings,
         perEmployee,
         qualityScore: quality,
@@ -395,6 +418,8 @@ const App = (() => {
       await DB.putRoster(roster);
       state.historyRosters = await DB.getAllRosters();
       state.currentRoster = roster;
+      state.undoStack = [];
+      UI.setUndoEnabled(false);
 
       UI.closeFloatPrompt();
       renderAll();
@@ -417,6 +442,8 @@ const App = (() => {
 
   async function applyManualAssignment(day, role, slotIndex, employeeId) {
     if (!state.currentRoster) return;
+    if (blockIfLocked()) { UI.closeAssignModal(); return; }
+    pushUndoSnapshot();
     const roster = state.currentRoster;
 
     // Remove employee from any existing role that day (single shift enforcement),
@@ -456,6 +483,8 @@ const App = (() => {
 
   async function removeAssignment(day, role, slotIndex) {
     if (!state.currentRoster) return;
+    if (blockIfLocked()) return;
+    pushUndoSnapshot();
     const roster = state.currentRoster;
     const employeeId = roster.schedule[day][role][slotIndex];
     roster.schedule[day][role].splice(slotIndex, 1);
@@ -484,10 +513,24 @@ const App = (() => {
       Models.WEEK_DAYS.forEach(day => {
         const roles = roster.employeeDay[e.id][day] || ['Day Off'];
         if (roles.length > 1) warnings.push(`${e.name} is double-shifted on ${day} (${roles.join(' + ')}).`);
+        // Conflict checks for manual edits and day swaps: qualification and
+        // vacation/unavailability violations that the generator would never
+        // produce, but a manual move or a whole-day swap can introduce.
+        const dayIdx = Models.WEEK_DAYS.indexOf(day);
+        const dateStr = Scheduler.dateForDay(roster.weekStartDate, dayIdx);
+        roles.forEach(role => {
+          if (role === 'Day Off') return;
+          if (!Scheduler.isQualifiedForRole(e, role)) {
+            warnings.push(`⚠ CONFLICT: ${e.name} is assigned to ${role} on ${day} but is NOT qualified for it.`);
+          }
+          if (!Scheduler.isAvailable(e, dateStr)) {
+            warnings.push(`⚠ CONFLICT: ${e.name} is assigned to ${role} on ${day} (${dateStr}) but is on vacation/unavailable that day.`);
+          }
+        });
       });
     });
     roster.warnings = warnings;
-    roster.perEmployee = Stats.computeFromEmployeeDay(activeEmps, roster.employeeDay, state.rates, roster.weekStartDate);
+    roster.perEmployee = Stats.computeFromEmployeeDay(activeEmps, roster.employeeDay, state.rates, roster.weekStartDate, state.holidays);
     roster.qualityScore = Stats.qualityScore(roster.perEmployee, warnings);
 
     await DB.putRoster(roster);
@@ -504,10 +547,70 @@ const App = (() => {
     UI.showTab('roster');
   }
 
+  // ---------------- My Week view ----------------
+  function showMyWeek(employeeId) {
+    const emp = state.employees.find(e => e.id === employeeId);
+    if (!emp) return;
+    UI.openMyWeekModal(emp, state.currentRoster, state.rates, state.holidays);
+  }
+
+  // ---------------- Day notes ----------------
+  async function saveDayNote(day, text) {
+    if (!state.currentRoster) return;
+    if (!state.currentRoster.dayNotes) state.currentRoster.dayNotes = {};
+    const trimmed = (text || '').trim();
+    if (trimmed) state.currentRoster.dayNotes[day] = trimmed;
+    else delete state.currentRoster.dayNotes[day];
+    await DB.putRoster(state.currentRoster);
+    state.historyRosters = await DB.getAllRosters();
+    UI.renderRosterTable(state.currentRoster, state.employees);
+  }
+
+  // ---------------- Undo / lock helpers ----------------
+  function pushUndoSnapshot() {
+    if (!state.currentRoster) return;
+    state.undoStack.push(JSON.stringify(state.currentRoster));
+    if (state.undoStack.length > 20) state.undoStack.shift();
+    UI.setUndoEnabled(true);
+  }
+
+  async function undoLastEdit() {
+    if (state.undoStack.length === 0) { toast('Nothing to undo.'); return; }
+    const snapshot = state.undoStack.pop();
+    state.currentRoster = JSON.parse(snapshot);
+    await DB.putRoster(state.currentRoster);
+    state.historyRosters = await DB.getAllRosters();
+    renderAll();
+    UI.setUndoEnabled(state.undoStack.length > 0);
+    toast('Undone.');
+  }
+
+  // Returns true (and warns) when the roster is locked and edits should stop.
+  function blockIfLocked() {
+    if (state.currentRoster && state.currentRoster.locked) {
+      const proceed = confirm('This roster is LOCKED (published). Unlock it to make changes?\n\nOK = unlock and continue editing.\nCancel = keep it locked.');
+      if (!proceed) return true;
+      state.currentRoster.locked = false;
+      UI.setLockState(false);
+    }
+    return false;
+  }
+
+  async function toggleLock() {
+    if (!state.currentRoster) { toast('Generate a roster first.'); return; }
+    state.currentRoster.locked = !state.currentRoster.locked;
+    await DB.putRoster(state.currentRoster);
+    state.historyRosters = await DB.getAllRosters();
+    UI.setLockState(state.currentRoster.locked);
+    toast(state.currentRoster.locked ? 'Roster locked (published).' : 'Roster unlocked.');
+  }
+
   // ---------------- Swap days ----------------
   async function swapDays(dayA, dayB) {
     if (!state.currentRoster) { toast('Generate a roster first.'); return; }
     if (dayA === dayB) { toast('Choose two different days to swap.'); return; }
+    if (blockIfLocked()) return;
+    pushUndoSnapshot();
     const roster = state.currentRoster;
 
     // Swap the whole day's role assignments
@@ -597,6 +700,8 @@ const App = (() => {
       if (storedRates) state.rates = storedRates;
       const storedFloat = await DB.getSetting('defaultFloatCounts');
       if (storedFloat) state.defaultFloatCounts = storedFloat;
+      const storedHolidays2 = await DB.getSetting('holidays');
+      if (storedHolidays2) state.holidays = storedHolidays2;
       state.historyRosters = await DB.getAllRosters();
       const existing = state.historyRosters.find(r => r.weekStartDate === state.weekStartDate);
       state.currentRoster = existing || (state.historyRosters[0] || null);

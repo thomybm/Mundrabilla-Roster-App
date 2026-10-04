@@ -7,7 +7,7 @@
 
 const Stats = (() => {
 
-  function computeFromEmployeeDay(employees, employeeDay, rates, weekStartDate) {
+  function computeFromEmployeeDay(employees, employeeDay, rates, weekStartDate, holidays) {
     const perEmployee = {};
     employees.forEach(e => {
       const roleCounts = {};
@@ -57,7 +57,13 @@ const Stats = (() => {
             if (Models.WEEKEND_DAYS.includes(day)) st.weekendOff += 1;
             else st.weekdayOff += 1;
           } else {
-            const rate = rates[day] || 8;
+            let dateStr = null;
+            if (weekStartDate) {
+              const d0 = new Date(weekStartDate + 'T00:00:00');
+              d0.setDate(d0.getDate() + Models.WEEK_DAYS.indexOf(day));
+              dateStr = `${d0.getFullYear()}-${String(d0.getMonth()+1).padStart(2,'0')}-${String(d0.getDate()).padStart(2,'0')}`;
+            }
+            const rate = Models.rateForDate(rates, holidays, day, dateStr);
             st.earnings += rate * Models.SHIFT_HOURS;
             st.hoursWorked += Models.SHIFT_HOURS;
             if (day === 'Sat') st.satShifts += 1;

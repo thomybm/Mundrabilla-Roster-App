@@ -58,7 +58,7 @@ const Scheduler = (() => {
   }
 
   // ---------- Candidate construction (randomized greedy) ----------
-  function buildCandidate(employees, floatCounts, rates, history, weekStartDate, rng, satRotation, sunRotation) {
+  function buildCandidate(employees, floatCounts, rates, holidays, history, weekStartDate, rng, satRotation, sunRotation) {
     const empIds = employees.map(e => e.id);
     const stats = {};
     empIds.forEach(id => {
@@ -120,7 +120,7 @@ const Scheduler = (() => {
         // score candidates: lower running load = more likely picked; add randomness + prefs
         const scored = candidates.map(e => {
           const st = stats[e.id];
-          const rate = rates[dayName] || 8;
+          const rate = Models.rateForDate(rates, holidays, dayName, dateStr);
           let loadScore = st.hoursWorked * 0.5 + st.earnings / 100 + st.roleCounts[role] * 2 - prefScore(e, role);
           // Weekend day-off rotation: someone who hasn't had this specific
           // weekend day (Sat or Sun) off in a long time is made progressively
@@ -163,7 +163,7 @@ const Scheduler = (() => {
         employeeDay[pick.id][dayName].push(role);
 
         const st = stats[pick.id];
-        const rate = rates[dayName] || 8;
+        const rate = Models.rateForDate(rates, holidays, dayName, dateStr);
         st.earnings += rate * Models.SHIFT_HOURS;
         st.hoursWorked += Models.SHIFT_HOURS;
         st.roleCounts[role] += 1;
@@ -347,7 +347,7 @@ const Scheduler = (() => {
 
   function generate(options) {
     const {
-      employees, floatCounts, rates, history = {}, weekStartDate,
+      employees, floatCounts, rates, holidays = {}, history = {}, weekStartDate,
       iterations = 60, satRotation = {}, sunRotation = {}
     } = options;
 
@@ -360,7 +360,7 @@ const Scheduler = (() => {
     const rng = mulberry32(Date.now() % 2147483647);
 
     for (let i = 0; i < iterations; i++) {
-      const candidate = buildCandidate(activeEmployees, floatCounts, rates, history, weekStartDate, rng, satRotation, sunRotation);
+      const candidate = buildCandidate(activeEmployees, floatCounts, rates, holidays, history, weekStartDate, rng, satRotation, sunRotation);
       const scored = scoreCandidate(candidate, activeEmployees);
       if (!best || scored.cost < best.scored.cost) {
         best = { candidate, scored };
@@ -368,7 +368,7 @@ const Scheduler = (() => {
     }
 
     // Local search: attempt swaps between two employees on the same day to reduce cost
-    best = localSearchImprove(best, activeEmployees, floatCounts, rates, history, weekStartDate, 40);
+    best = localSearchImprove(best, activeEmployees, floatCounts, rates, holidays, history, weekStartDate, 40);
 
     // Targeted pass: for each day-off, try to swap in a Morning shift the day
     // before and a Night shift the day after (maximizes unbroken rest time).
@@ -376,7 +376,7 @@ const Scheduler = (() => {
     // that wasn't available before (e.g. a chain of 3 people's shifts).
     for (let round = 0; round < 4; round++) {
       const before = best.scored.cost;
-      best = restOptimizationPass(best, activeEmployees, rates, weekStartDate);
+      best = restOptimizationPass(best, activeEmployees, rates, holidays, weekStartDate);
       if (best.scored.cost >= before) break; // no further improvement found
     }
 
@@ -395,7 +395,7 @@ const Scheduler = (() => {
   // colleague already working that shift that day, only if both remain
   // qualified for what they end up doing, and only if the swap doesn't make
   // the overall roster worse.
-  function restOptimizationPass(best, employees, rates, weekStartDate) {
+  function restOptimizationPass(best, employees, rates, holidays, weekStartDate) {
     const morningRoles = Models.WORK_ROLES.filter(Models.isMorningRole);
     const nightRoles = Models.WORK_ROLES.filter(Models.isNightRole);
 
@@ -406,18 +406,18 @@ const Scheduler = (() => {
 
         // Day before -> aim for a Morning role
         if (idx > 0) {
-          best = tryRestSwap(best, employees, emp, Models.WEEK_DAYS[idx - 1], morningRoles, rates, weekStartDate);
+          best = tryRestSwap(best, employees, emp, Models.WEEK_DAYS[idx - 1], morningRoles, rates, holidays, weekStartDate);
         }
         // Day after -> aim for a Night role
         if (idx < Models.WEEK_DAYS.length - 1) {
-          best = tryRestSwap(best, employees, emp, Models.WEEK_DAYS[idx + 1], nightRoles, rates, weekStartDate);
+          best = tryRestSwap(best, employees, emp, Models.WEEK_DAYS[idx + 1], nightRoles, rates, holidays, weekStartDate);
         }
       });
     });
     return best;
   }
 
-  function tryRestSwap(best, employees, emp, targetDay, targetRoles, rates, weekStartDate) {
+  function tryRestSwap(best, employees, emp, targetDay, targetRoles, rates, holidays, weekStartDate) {
     const currentRoles = best.candidate.employeeDay[emp.id][targetDay] || ['Day Off'];
     if (currentRoles.some(r => targetRoles.includes(r))) return best; // already satisfied
     if (currentRoles.includes('Day Off')) return best; // don't disturb another day off
@@ -449,7 +449,7 @@ const Scheduler = (() => {
         trial.employeeDay[emp.id][targetDay] = [targetRole];
         trial.employeeDay[otherId][targetDay] = [currentRole];
 
-        recomputeRoleCounts(trial, employees, rates, weekStartDate);
+        recomputeRoleCounts(trial, employees, rates, holidays, weekStartDate);
         const scored = scoreCandidate(trial, employees);
         if (scored.cost < best.scored.cost) {
           return { candidate: trial, scored };
@@ -463,7 +463,7 @@ const Scheduler = (() => {
     return JSON.parse(JSON.stringify(c));
   }
 
-  function localSearchImprove(best, employees, floatCounts, rates, history, weekStartDate, tries) {
+  function localSearchImprove(best, employees, floatCounts, rates, holidays, history, weekStartDate, tries) {
     const rng = mulberry32(12345);
     for (let t = 0; t < tries; t++) {
       const days = Object.keys(best.candidate.schedule);
@@ -491,7 +491,7 @@ const Scheduler = (() => {
       trial.employeeDay[id2][day] = [r1];
 
       // recompute stats roughly by rebuilding role counts (cheap approximation)
-      recomputeRoleCounts(trial, employees, rates, weekStartDate);
+      recomputeRoleCounts(trial, employees, rates, holidays, weekStartDate);
 
       const scored = scoreCandidate(trial, employees);
       if (scored.cost < best.scored.cost) {
@@ -501,7 +501,7 @@ const Scheduler = (() => {
     return best;
   }
 
-  function recomputeRoleCounts(candidate, employees, rates, weekStartDate) {
+  function recomputeRoleCounts(candidate, employees, rates, holidays, weekStartDate) {
     employees.forEach(e => {
       Models.ROLES.forEach(r => { candidate.stats[e.id].roleCounts[r] = 0; });
       candidate.stats[e.id].satShifts = 0;
@@ -518,7 +518,7 @@ const Scheduler = (() => {
         roles.forEach((role, idx) => {
           candidate.stats[e.id].roleCounts[role] = (candidate.stats[e.id].roleCounts[role] || 0) + 1;
           if (role !== 'Day Off') {
-            const rate = rates[day] || 8;
+            const rate = Models.rateForDate(rates, holidays, day, dateForDay(weekStartDate, Models.WEEK_DAYS.indexOf(day)));
             candidate.stats[e.id].earnings += rate * Models.SHIFT_HOURS;
             candidate.stats[e.id].hoursWorked += Models.SHIFT_HOURS;
             if (day === 'Sat') candidate.stats[e.id].satShifts += 1;

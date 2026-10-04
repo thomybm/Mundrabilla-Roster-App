@@ -64,7 +64,9 @@
         <span class="muted">⇄</span>
         <select id="swapDayB"></select>
         <button id="btnSwapDays" class="btn-secondary">Swap</button>
+        <button id="btnUndo" class="btn-secondary" disabled>↩ Undo</button>
         <div style="flex:1"></div>
+        <button id="btnToggleLock" class="btn-secondary">🔓 Lock Roster</button>
         <button id="btnPrintPoster" class="btn-secondary">🖨 Print / Save as PDF</button>
       </div>
       <div id="rosterWarnings" class="warnings-box" style="display:none;"></div>
@@ -102,6 +104,11 @@
           <h3>Float Shifts Required Per Day</h3>
           <p class="muted">Float supports Kitchen or Housekeeping. Set how many Float positions are needed each day before generating a roster.</p>
           <div id="floatForm" class="float-form"></div>
+        </div>
+        <div class="card">
+          <h3>Public Holidays</h3>
+          <p class="muted">Dates with special pay rates (e.g. Australia Day, ANZAC Day). These override the regular day rate when generating and costing rosters.</p>
+          <div id="holidaysForm" class="holidays-form"></div>
         </div>
         <div class="card">
           <h3>Transfer Data Between Devices</h3>
